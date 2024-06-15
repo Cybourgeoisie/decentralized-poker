@@ -8,30 +8,14 @@ require("@nomicfoundation/hardhat-ethers");
 require("@nomiclabs/hardhat-web3");
 require("hardhat-gas-reporter");
 require("dotenv").config();
-const fs = require("fs");
-const path = require("path");
-
-// Default private keys - we don't want or need these in production
-let sepoliaPrivateKey = "0x0000000000000000000000000000000000000000000000000000000000000001";
-let basePrivateKey = "0x0000000000000000000000000000000000000000000000000000000000000001";
+const loadPrivateKeys = require("./scripts/hardhat/load-private-keys");
 
 // If we have private keys in the environment, set them up
-try {
-	if (process.env.SEPOLIA_PRIVATE_KEY_FILE && fs.existsSync(path.resolve(__dirname, process.env.SEPOLIA_PRIVATE_KEY_FILE))) {
-		sepoliaPrivateKey = fs.readFileSync(path.resolve(__dirname, process.env.SEPOLIA_PRIVATE_KEY_FILE), "utf-8");
-		if (!sepoliaPrivateKey.startsWith("0x")) {
-			sepoliaPrivateKey = "0x" + sepoliaPrivateKey;
-		}
-	}
-
-	if (process.env.BASE_PRIVATE_KEY_FILE && fs.existsSync(path.resolve(__dirname, process.env.BASE_PRIVATE_KEY_FILE))) {
-		basePrivateKey = fs.readFileSync(path.resolve(__dirname, process.env.BASE_PRIVATE_KEY_FILE), "utf-8");
-
-		if (!basePrivateKey.startsWith("0x")) {
-			basePrivateKey = "0x" + basePrivateKey;
-		}
-	}
-} catch (_) {}
+const keys = loadPrivateKeys({
+	"sepolia": process.env.SEPOLIA_PRIVATE_KEY_FILE,
+	"base-sepolia": process.env.BASE_SEPOLIA_PRIVATE_KEY_FILE,
+	"base": process.env.BASE_PRIVATE_KEY_FILE,
+});
 
 module.exports = {
 	solidity: {
@@ -50,11 +34,15 @@ module.exports = {
 		},
 		sepolia: {
 			url: process.env.ETHEREUM_SEPOLIA_HTTPS_RPC,
-			accounts: [sepoliaPrivateKey],
+			accounts: [keys["sepolia"]],
+		},
+		"base-sepolia": {
+			url: process.env.BASE_SEPOLIA_HTTPS_RPC,
+			accounts: [keys["base-sepolia"]],
 		},
 		base: {
 			url: process.env.BASE_HTTPS_RPC,
-			accounts: [basePrivateKey],
+			accounts: [keys["base"]],
 		},
 	},
 	gasReporter: {

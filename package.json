@@ -7,8 +7,9 @@
 		"hardhat:chain": "hardhat node",
 		"hardhat:fork": "hardhat node --network hardhat",
 		"hardhat:compile": "hardhat compile",
-		"hardhat:deploy-sepolia": "hardhat run ./scripts/deploy.js --network sepolia",
-		"hardhat:deploy-base": "hardhat run ./scripts/deploy.js --network base",
+		"hardhat:deploy-sepolia": "hardhat run ./scripts/contracts/deploy.js --network sepolia",
+		"hardhat:deploy-base-sepolia": "hardhat run ./scripts/contracts/deploy.js --network base-sepolia",
+		"hardhat:deploy-base": "hardhat run ./scripts/contracts/deploy.js --network base",
 		"hardhat:test": "hardhat test --network hardhat"
 	},
 	"author": "Cybourgeoisie",
