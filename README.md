@@ -23,15 +23,43 @@ None yet
 -   `hardhat:deploy-base`: Deploy contracts to Base
 -   `hardhat:test`: Run contract tests
 
+## Deployment
+
+### Web3URL
+
+Ethereum Sepolia Deployment:
+
+```
+# on-chain storage
+npx ethfs-cli create -p [pkey] -c 11155111
+npx ethfs-cli upload -f apps/poker-ui-react/build -a [deployment address from previous line] -c 11155111 -p [pkey] -t 1
+```
+
+Base Sepolia Deployment:
+
+```
+npx ethfs-cli create -p [pkey] -c 84532
+```
+
+### Log of Deployments
+
+1. Test if React could work
+    - https://0x4685d6b0d8d873f31ecff8a698298a3437b3966a.sep.w3link.io/index.html
+
 ## Documentation
 
 ### Apps
 
-None yet
+- Poker UI React - React implementation of Poker UI
 
 ### Packages
 
 None yet
+
+### Chain IDs
+
+- Base: 8453
+- Base Sepolia: 84532
 
 ### Conventions
 

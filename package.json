@@ -29,6 +29,7 @@
 		"@openzeppelin/test-helpers": "^0.5.16",
 		"chai": "^4.4.1",
 		"dotenv": "^16.4.5",
+		"ethfs-cli": "^1.0.15",
 		"hardhat": "^2.22.4",
 		"hardhat-gas-reporter": "^2.2.0",
 		"keccak256": "^1.0.6",
