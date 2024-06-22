@@ -12,6 +12,7 @@ import { XMTPProvider } from "@xmtp/react-sdk";
 import { XMTPHelperProvider } from "../providers/XMTPHelperProvider";
 import { XMTPConversationProvider } from "../providers/XMTPConversationProvider";
 import { PokerProvider } from "../providers/PokerProvider";
+import { ContractProvider } from "../providers/ContractProvider";
 
 const wagmiConfig = createConfig({
 	chains: [baseSepolia, base],
@@ -40,18 +41,20 @@ function App() {
 						<XMTPHelperProvider>
 							<XMTPConversationProvider>
 								<PokerProvider>
-									<div className="App">
-										{/* Account Connect */}
-										<header className="text-white flex flex-row items-end w-full p-4 absolute z-50 pointer-events-none">
-											<AccountConnect />
-										</header>
+									<ContractProvider>
+										<div className="App">
+											{/* Account Connect */}
+											<header className="text-white flex flex-row items-end w-full p-4 absolute z-50 pointer-events-none">
+												<AccountConnect />
+											</header>
 
-										{/* Game UX */}
-										<GameUX />
+											{/* Game UX */}
+											<GameUX />
 
-										{/* Chat Sidebar */}
-										<ChatSidebar />
-									</div>
+											{/* Chat Sidebar */}
+											<ChatSidebar />
+										</div>
+									</ContractProvider>
 								</PokerProvider>
 							</XMTPConversationProvider>
 						</XMTPHelperProvider>
