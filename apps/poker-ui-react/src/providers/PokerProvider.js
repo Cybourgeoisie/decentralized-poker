@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useCallback } from "react";
 import pokersolver from "pokersolver";
+import { useXMTPConversation } from "./XMTPConversationProvider";
 
 const Suits = ["d", "c", "h", "s"];
 const Ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"];
@@ -35,6 +36,10 @@ function pokerReducer(state, action) {
 		case SET_GAME_ID:
 			return { ...state, gameId: action.payload };
 		case ADD_PLAYER:
+			// Do not add duplicate players by ID
+			if (state.players.find((player) => player.id === action.payload.id)) {
+				return state;
+			}
 			return { ...state, players: [...state.players, action.payload] };
 		case REMOVE_PLAYER:
 			return { ...state, players: state.players.filter((player) => player.id !== action.payload) };
@@ -64,6 +69,9 @@ const PokerContext = createContext();
 // Provider component
 export function PokerProvider({ children }) {
 	const [state, dispatch] = useReducer(pokerReducer, initialState);
+	const { formattedMessages } = useXMTPConversation();
+
+	console.log({ formattedMessages });
 
 	// Functions to interact with the game state
 	const setGameId = useCallback((gameId) => {

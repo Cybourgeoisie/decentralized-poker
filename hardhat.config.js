@@ -5,6 +5,7 @@
 require("@nomicfoundation/hardhat-chai-matchers");
 require("@nomicfoundation/hardhat-network-helpers");
 require("@nomicfoundation/hardhat-ethers");
+require("@nomicfoundation/hardhat-verify");
 require("@nomiclabs/hardhat-web3");
 require("hardhat-gas-reporter");
 require("dotenv").config();
@@ -55,9 +56,10 @@ module.exports = {
 		currencyDisplayPrecision: 4,
 	},
 	etherscan: {
-		apiKey: process.env.BASESCAN_API_KEY_ETHEREUM,
-	},
-	sourcify: {
-		enabled: true,
+		apiKey: {
+			sepolia: process.env.ETHERSCAN_API_KEY,
+			base: process.env.BASESCAN_API_KEY,
+			baseSepolia: process.env.BASESCAN_API_KEY,
+		},
 	},
 };

@@ -1,29 +1,17 @@
-pragma solidity >=0.8.2 <0.9.0;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract MultiplayerCardGameVerifier {
+contract MultiplayerCardGameVerifier is ReentrancyGuard {
 
-    // Game state
-    enum GameState {
-        CREATED,
-        STARTED,
-        COMPLETED,
-        INVALIDATED
-    }
+    enum GameState { CREATED, STARTED, COMPLETED, INVALIDATED }
 
-    // Game struct
     struct Game {
-        // Creation details
-        uint256 id;
+        bytes16 gameId;
         uint256 maxPlayers;
-
-        // Player details
         address creator;
         address winner;
         address[] players;
-
-        // Gameplay state
         GameState state;
         uint256 createdAt;
         uint256 startedAt;
@@ -31,93 +19,97 @@ contract MultiplayerCardGameVerifier {
         uint256 invalidatedAt;
     }
 
-    // Mapping of game id to game
-    mapping(uint256 => Game) public games;
+    bytes16[] public openGames;
+    mapping(bytes16 => Game) public games;
 
-    // Current game ID
-    uint256 public currentGameId;
+    event GameRegistered(bytes16 indexed gameId, address indexed creator, uint256 maxPlayers);
+    event GameJoined(bytes16 indexed gameId, address indexed player);
+    event GameStarted(bytes16 indexed gameId);
+    event GameCompleted(bytes16 indexed gameId, address indexed winner);
+    event GameInvalidated(bytes16 indexed gameId);
 
-    // Constructor
-    constructor() {
-        currentGameId = 0;
+    function registerGame(bytes16 _gameId, uint256 _maxPlayers, address[] memory _players) public nonReentrant {
+        require(_maxPlayers >= 2, "Game must have at least 2 players");
+        require(games[_gameId].gameId == bytes16(0), "Game ID already exists");
+
+        games[_gameId] = Game({
+            gameId: _gameId,
+            maxPlayers: _maxPlayers,
+            creator: msg.sender,
+            winner: address(0),
+            players: new address[](0),
+            state: GameState.CREATED,
+            createdAt: block.timestamp,
+            startedAt: 0,
+            completedAt: 0,
+            invalidatedAt: 0
+        });
+
+        games[_gameId].players.push(msg.sender);
+
+        for (uint256 i = 0; i < _players.length; i++) {
+            require(_players[i] != address(0), "Invalid player address");
+            games[_gameId].players.push(_players[i]);
+        }
+
+        emit GameRegistered(_gameId, msg.sender, _maxPlayers);
+
+        if (games[_gameId].players.length == games[_gameId].maxPlayers) {
+            _startGame(_gameId);
+        } else {
+            openGames.push(_gameId);
+        }
     }
 
-    // Modifier: only allow EOAs to play
-    modifier onlyEOA() {
-        require(msg.sender == tx.origin, "Only EOAs allowed");
-        _;
-    }
-
-    // Register a new game
-    function registerGame(
-        uint256 _maxPlayers
-    )
-        public onlyEOA nonReentrant
-    {
-        currentGameId++;
-
-        games[currentGameId] = Game(
-            currentGameId,
-            _maxPlayers,
-            msg.sender,
-            address(0),
-            new address[](0),
-            GameState.CREATED,
-            block.timestamp,
-            0,
-            0,
-            0
-        );
-    }
-
-    // Join a game
-    function joinGame(uint256 _gameId)
-        public onlyEOA nonReentrant
-    {
+    function joinGame(bytes16 _gameId) public nonReentrant {
         Game storage game = games[_gameId];
 
         require(game.state == GameState.CREATED, "Game not in CREATED state");
         require(game.players.length < game.maxPlayers, "Game is full");
-
-        // Only allow a player to join once
-        for (uint256 i = 0; i < game.players.length; i++) {
-            require(game.players[i] != msg.sender, "Player already joined");
-        }
+        require(!_isPlayerInGame(game, msg.sender), "Player already joined");
 
         game.players.push(msg.sender);
+
+        emit GameJoined(_gameId, msg.sender);
+
+        if (game.players.length == game.maxPlayers) {
+            _startGame(_gameId);
+        }
     }
 
-    // Start a game
-    function startGame(uint256 _gameId)
-        public onlyEOA
-    {
+    function getOpenGames() public view returns (bytes16[] memory) {
+        return openGames;
+    }
+
+    function getPlayersInGame(bytes16 _gameId) public view returns (address[] memory) {
+        return games[_gameId].players;
+    }
+
+    function startGame(bytes16 _gameId) public {
         Game storage game = games[_gameId];
 
         require(game.state == GameState.CREATED, "Game not in CREATED state");
         require(game.creator == msg.sender, "Only creator can start the game");
+        require(game.players.length >= 2, "Game must have at least 2 players");
 
-        game.state = GameState.STARTED;
-        game.startedAt = block.timestamp;
+        _startGame(_gameId);
     }
 
-    // Complete a game
-    function completeGame(uint256 _gameId, address _winner)
-        public onlyEOA
-    {
+    function completeGame(bytes16 _gameId, address _winner) public {
         Game storage game = games[_gameId];
 
         require(game.state == GameState.STARTED, "Game not in STARTED state");
         require(game.creator == msg.sender, "Only creator can complete the game");
+        require(_isPlayerInGame(game, _winner), "Winner must be a player in the game");
 
         game.state = GameState.COMPLETED;
         game.completedAt = block.timestamp;
         game.winner = _winner;
+
+        emit GameCompleted(_gameId, _winner);
     }
 
-    // Invalidate a game
-    function invalidateGame(uint256 _gameId)
-        public onlyEOA
-    {
+    function invalidateGame(bytes16 _gameId) public {
         Game storage game = games[_gameId];
 
         require(game.state == GameState.CREATED, "Game not in CREATED state");
@@ -125,5 +117,48 @@ contract MultiplayerCardGameVerifier {
 
         game.state = GameState.INVALIDATED;
         game.invalidatedAt = block.timestamp;
+
+        _pruneOpenGamesList();
+
+        emit GameInvalidated(_gameId);
+    }
+
+    function pruneOpenGamesList() public {
+        _pruneOpenGamesList();
+    }
+
+    function _startGame(bytes16 _gameId) private {
+        Game storage game = games[_gameId];
+        game.state = GameState.STARTED;
+        game.startedAt = block.timestamp;
+
+        _pruneOpenGamesList();
+
+        emit GameStarted(_gameId);
+    }
+
+    function _pruneOpenGamesList() private {
+        uint256 currentTime = block.timestamp;
+        uint256 timeLimitMinutesAgo = currentTime - 10 minutes;
+
+        for (uint256 i = 0; i < openGames.length;) {
+            Game storage game = games[openGames[i]];
+
+            if (game.createdAt < timeLimitMinutesAgo || game.state != GameState.CREATED) {
+                openGames[i] = openGames[openGames.length - 1];
+                openGames.pop();
+            } else {
+                i++;
+            }
+        }
+    }
+
+    function _isPlayerInGame(Game storage game, address player) private view returns (bool) {
+        for (uint256 i = 0; i < game.players.length; i++) {
+            if (game.players[i] == player) {
+                return true;
+            }
+        }
+        return false;
     }
 }

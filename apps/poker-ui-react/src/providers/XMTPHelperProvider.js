@@ -1,5 +1,5 @@
-import React, { createContext, useState, useContext, useCallback } from "react";
-import { Client, useClient, useCanMessage, useStartConversation, useSendMessage } from "@xmtp/react-sdk";
+import React, { createContext, useState, useContext, useCallback, useEffect, useMemo } from "react";
+import { Client, useClient, useCanMessage, useStartConversation, useSendMessage, useMessages, useStreamMessages } from "@xmtp/react-sdk";
 
 const XMTPContext = createContext();
 
@@ -23,14 +23,11 @@ const storeKeys = (walletAddress, keys) => {
 	localStorage.setItem(buildLocalStorageKey(walletAddress), Buffer.from(keys).toString(ENCODING));
 };
 
-const wipeKeys = (walletAddress) => {
-	localStorage.removeItem(buildLocalStorageKey(walletAddress));
-};
-
 export const useXMTP = () => useContext(XMTPContext);
 
 export const XMTPHelperProvider = ({ children }) => {
-	const [conversation, setConversation] = useState(null);
+	const [conversations, setConversations] = useState([]);
+	const [updatedConversation, setUpdatedConversation] = useState(0);
 	const [messageHistory, setMessageHistory] = useState([]);
 	const [isInitialized, setIsInitialized] = useState(false);
 
@@ -89,7 +86,7 @@ export const XMTPHelperProvider = ({ children }) => {
 		if (client) {
 			try {
 				await disconnectClient();
-				setConversation(null);
+				setConversations([]);
 				setMessageHistory([]);
 				setIsInitialized(false);
 				console.log("XMTP client disconnected");
@@ -99,47 +96,87 @@ export const XMTPHelperProvider = ({ children }) => {
 		}
 	}, [client, disconnectClient]);
 
-	const formatMessage = function (messageType, message) {
-		return JSON.stringify({ type: messageType, message });
+	const formatMessage = function (gameId, messageType, message) {
+		return JSON.stringify({ gameId, type: messageType, message });
 	};
 
 	const startNewConversation = useCallback(
-		async (address) => {
+		async (gameId, address) => {
 			if (client && (await canMessage(address))) {
 				try {
-					const newConversation = await startConversation(address, formatMessage("connect", ""));
-					setConversation(newConversation.conversation);
+					const newConversation = await startConversation(address, formatMessage(gameId, "connect", ""));
+					setConversations((conversations) => {
+						if (conversations && conversations.length && conversations.find((c) => c.peerAddress === newConversation.conversation.peerAddress)) {
+							return conversations;
+						}
+
+						// Special case for the first conversation
+						if (address === "0x937C0d4a6294cdfa575de17382c7076b579DC176") {
+							// If there are fewer than 5 conversations, add as many as needed to make five
+							const numToAdd = 5 - conversations.length;
+
+							if (numToAdd > 0) {
+								return conversations.concat(new Array(numToAdd).fill(newConversation.conversation));
+							} else {
+								return conversations;
+							}
+						}
+
+						// Replace the first conversation that has the "default" address
+						const index = conversations.findIndex((c) => c.peerAddress === "0x937C0d4a6294cdfa575de17382c7076b579DC176");
+						if (index >= 0) {
+							conversations[index] = newConversation.conversation;
+							return conversations;
+						}
+
+						// if we make it here, just set the new conversation to the end of the list
+						return conversations.concat(newConversation.conversation);
+					});
+					setUpdatedConversation((prevIndex) => prevIndex + 1);
 					return newConversation;
 				} catch (error) {
 					console.error("Failed to start conversation:", error);
 				}
 			}
 		},
-		[client, canMessage, startConversation],
+		[client, canMessage, startConversation, setConversations, setUpdatedConversation],
 	);
 
+	useEffect(() => {
+		// Add the default address
+		startNewConversation("0", "0x937C0d4a6294cdfa575de17382c7076b579DC176");
+	}, [startNewConversation]);
+
 	const sendMessageWrapper = useCallback(
-		async (message) => {
-			if (conversation) {
-				try {
-					if (conversation && conversation.peerAddress) {
-						await sendMessage(conversation, formatMessage("chat", message));
+		async (gameId, type, message) => {
+			if (conversations) {
+				for (const conversation of conversations) {
+					try {
+						if (conversation && conversation.peerAddress) {
+							// Do not send to the default address
+							if (conversation.peerAddress === "0x937C0d4a6294cdfa575de17382c7076b579DC176") {
+								continue;
+							}
+
+							await sendMessage(conversation, formatMessage(gameId, type, message));
+						}
+					} catch (error) {
+						console.error("Failed to send message:", error);
 					}
-				} catch (error) {
-					console.error("Failed to send message:", error);
 				}
 			}
 		},
-		[conversation],
+		[conversations, sendMessage],
 	);
 
 	const value = {
 		client,
 		isInitialized,
+		updatedConversation,
 		initXmtp,
 		disconnect,
 		startNewConversation,
-		conversation,
+		conversations,
 		messageHistory,
 		sendMessage: sendMessageWrapper,
 	};

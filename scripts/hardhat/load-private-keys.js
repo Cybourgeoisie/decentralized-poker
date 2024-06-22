@@ -6,11 +6,13 @@ function loadKey(network, keyFile) {
 	const relativePath = path.resolve(__dirname, "../../");
 
 	try {
-		if (keyFile && fs.existsSync(path.resolve(relativePath, keyFile))) {
-			keys[network] = fs.readFileSync(path.resolve(relativePath, keyFile), "utf-8");
-			if (!keys[network].startsWith("0x")) {
-				keys[network] = "0x" + keys[network];
+		const filepath = path.resolve(relativePath, keyFile);
+		if (keyFile && fs.existsSync(filepath)) {
+			let key = fs.readFileSync(filepath, "utf-8");
+			if (!key.startsWith("0x")) {
+				key = "0x" + key;
 			}
+			return key;
 		}
 	} catch (_) {}
 }

@@ -10,6 +10,7 @@ import GameUX from "./GameUX";
 import ChatSidebar from "../components/chat-sidebar/ChatSidebar";
 import { XMTPProvider } from "@xmtp/react-sdk";
 import { XMTPHelperProvider } from "../providers/XMTPHelperProvider";
+import { XMTPConversationProvider } from "../providers/XMTPConversationProvider";
 import { PokerProvider } from "../providers/PokerProvider";
 
 const wagmiConfig = createConfig({
@@ -37,20 +38,22 @@ function App() {
 				<ConnectKitProvider>
 					<XMTPProvider>
 						<XMTPHelperProvider>
-							<PokerProvider>
-								<div className="App">
-									{/* Account Connect */}
-									<header className="text-white flex flex-row items-end w-full p-4 absolute z-50 pointer-events-none">
-										<AccountConnect />
-									</header>
+							<XMTPConversationProvider>
+								<PokerProvider>
+									<div className="App">
+										{/* Account Connect */}
+										<header className="text-white flex flex-row items-end w-full p-4 absolute z-50 pointer-events-none">
+											<AccountConnect />
+										</header>
 
-									{/* Game UX */}
-									<GameUX />
+										{/* Game UX */}
+										<GameUX />
 
-									{/* Chat Sidebar */}
-									<ChatSidebar />
-								</div>
-							</PokerProvider>
+										{/* Chat Sidebar */}
+										<ChatSidebar />
+									</div>
+								</PokerProvider>
+							</XMTPConversationProvider>
 						</XMTPHelperProvider>
 					</XMTPProvider>
 				</ConnectKitProvider>

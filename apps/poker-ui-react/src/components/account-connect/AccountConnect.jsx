@@ -33,21 +33,13 @@ export default function AccountConnect() {
 	const { address, status, isConnected } = useAccount();
 	const { data: walletClient } = useWalletClient();
 
-	const { initXmtp, isInitialized: isXmtpInitialized, startNewConversation } = useXMTP();
+	const { initXmtp, isInitialized: isXmtpInitialized } = useXMTP();
 
 	useEffect(() => {
 		if (isConnected && walletClient && !isXmtpInitialized) {
 			initXmtp(walletClient);
 		}
-
-		if (isConnected && walletClient && isXmtpInitialized) {
-			startNewConversation(
-				walletClient.account.address.toLowerCase() == "0x9eE5E3Ff06425CF972E77c195F70Ecb18aC23d7f".toLowerCase()
-					? "0x1f48c5CA2DAA443A8413FA7a206D6a07FB7CCd04"
-					: "0x9eE5E3Ff06425CF972E77c195F70Ecb18aC23d7f",
-			);
-		}
-	}, [isConnected, walletClient, isXmtpInitialized, initXmtp, startNewConversation]);
+	}, [isConnected, walletClient, isXmtpInitialized, initXmtp]);
 
 	return (
 		<div className="flex flex-row w-full items-center justify-start space-x-2">

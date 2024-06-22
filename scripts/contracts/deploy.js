@@ -14,13 +14,13 @@ async function main() {
 	console.log("Account balance:", (await deployer.provider.getBalance(deployer.address)).toString());
 
 	// Get the contract to deploy
-	const Contract = await ethers.getContractFactory("MultiplayerCardGameVerifer");
+	const Contract = await ethers.getContractFactory("MultiplayerCardGameVerifier");
 
 	// Deploy contract
 	const _contract = await Contract.deploy();
 	await _contract.waitForDeployment();
 	const address = await _contract.getAddress();
-	console.log("MultiplayerCardGameVerifer deployed to:", address);
+	console.log("MultiplayerCardGameVerifier deployed to:", address);
 }
 
 main()

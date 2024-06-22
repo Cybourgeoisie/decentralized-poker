@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { ChatContainer } from "./ChatContainer";
 import { useXMTP } from "../../providers/XMTPHelperProvider";
 
 const ChatSidebar = () => {
-	const { conversation } = useXMTP();
+	const { conversations } = useXMTP();
 	const [isOpen, setIsOpen] = useState(false);
 
 	const toggleSidebar = () => {
@@ -16,8 +16,8 @@ const ChatSidebar = () => {
 			{/* Chat Icon */}
 			<button
 				onClick={toggleSidebar}
-				disabled={!conversation}
-				className={["absolute top-4 right-4 z-50 bg-blue-500 text-white p-2 rounded-full shadow-lg", !conversation ? "bg-grey" : ""].join("")}
+				disabled={!conversations || conversations.length === 0}
+				className={["absolute top-4 right-4 z-50 bg-blue-500 text-white p-2 rounded-full shadow-lg", !conversations ? "bg-grey" : ""].join("")}
 			>
 				{isOpen ? <X size={24} /> : <MessageCircle size={24} />}
 			</button>
@@ -28,7 +28,7 @@ const ChatSidebar = () => {
 					isOpen ? "translate-x-0" : "translate-x-full"
 				}`}
 			>
-				{conversation ? <ChatContainer conversation={conversation} /> : null}
+				{conversations && conversations.length > 0 ? <ChatContainer conversations={conversations} /> : null}
 			</div>
 		</div>
 	);
