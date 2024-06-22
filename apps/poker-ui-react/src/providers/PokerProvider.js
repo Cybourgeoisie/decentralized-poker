@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useReducer, useCallback } from "react";
 import pokersolver from "pokersolver";
 
+const Suits = ["d", "c", "h", "s"];
+const Ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"];
+
+const getNewDeck = () => {
+	return Suits.flatMap((suit) => Ranks.map((rank) => `${rank}${suit}`));
+};
+
 // Define the initial state
 const initialState = {
 	gameId: null,
@@ -20,6 +27,7 @@ const SET_COMMUNITY_CARDS = "SET_COMMUNITY_CARDS";
 const SET_POT = "SET_POT";
 const SET_CURRENT_TURN = "SET_CURRENT_TURN";
 const SET_GAME_STAGE = "SET_GAME_STAGE";
+const SET_DECK = "SET_DECK";
 
 // Reducer function
 function pokerReducer(state, action) {
@@ -43,6 +51,8 @@ function pokerReducer(state, action) {
 			return { ...state, currentTurn: action.payload };
 		case SET_GAME_STAGE:
 			return { ...state, gameStage: action.payload };
+		case SET_DECK:
+			return { ...state, deck: action.payload };
 		default:
 			return state;
 	}
@@ -88,34 +98,52 @@ export function PokerProvider({ children }) {
 		dispatch({ type: SET_GAME_STAGE, payload: stage });
 	}, []);
 
+	const setNewDeck = useCallback(() => {
+		const deck = getNewDeck();
+		deck.sort(() => Math.random() - 0.5);
+		dispatch({ type: SET_DECK, payload: deck });
+	}, []);
+
 	// Function to get a player's hand
 	const getPlayerHand = useCallback(
 		(playerId) => {
 			const player = state.players.find((p) => p.id === playerId);
-			return player ? player.hand : null;
+			return player ? player.hand : [];
 		},
 		[state.players],
 	);
 
-	// Function to evaluate a hand
-	const evaluateHand = useCallback(
-		(playerId) => {
-			const playerHand = getPlayerHand(playerId);
-			const communityCards = state.communityCards;
-			if (playerHand && communityCards.length === 5) {
-				const hand = [...playerHand, ...communityCards];
-				const result = pokersolver.Hand.solve(hand);
-				return result;
-			}
-			return null;
+	const dealHand = useCallback(
+		(deck, playerId) => {
+			const hand = [deck.pop(), deck.pop()];
+			setPlayerHand(playerId, hand);
 		},
-		[getPlayerHand, state.communityCards],
+		[setPlayerHand],
 	);
+
+	const dealCommunityCards = useCallback(
+		(deck) => {
+			const communityCards = [deck.pop(), deck.pop(), deck.pop(), deck.pop(), deck.pop()];
+			setCommunityCards(communityCards);
+		},
+		[setCommunityCards],
+	);
+
+	const evaluateHand = useCallback((playerHand, communityCards) => {
+		if (!playerHand || !communityCards || (playerHand.length === 0 && communityCards.length === 0)) return { descr: "No hand" };
+		const hand = pokersolver.Hand.solve([...playerHand, ...communityCards]);
+		return hand;
+	}, []);
 
 	// Value object to be provided
 	const value = {
 		gameId: state.gameId,
 		players: state.players,
+		evaluateHand,
+		deck: state.deck,
+		setNewDeck,
+		dealHand,
+		dealCommunityCards,
 		communityCards: state.communityCards,
 		pot: state.pot,
 		currentTurn: state.currentTurn,
@@ -129,7 +157,6 @@ export function PokerProvider({ children }) {
 		setCurrentTurn,
 		setGameStage,
 		getPlayerHand,
-		evaluateHand,
 	};
 
 	return <PokerContext.Provider value={value}>{children}</PokerContext.Provider>;

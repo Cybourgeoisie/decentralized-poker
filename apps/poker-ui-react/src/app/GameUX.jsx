@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { useXMTP } from "../providers/XMTPHelperProvider";
 import { usePoker } from "../providers/PokerProvider";
@@ -13,22 +13,38 @@ const demoPlayers = [
 	{ id: 6, name: "You" },
 ];
 
-const communityCards = ["♠A", "♥K", "♦Q", "♣J", "♠10"];
-const yourHand = ["♠A", "♠K"];
-
 export default function GameUX() {
 	const { client: XmtpClient } = useXMTP();
 	const [joinGameId, setJoinGameId] = useState("");
 	const [copiedToClipboard, setCopiedToClipboard] = useState(false);
 
-	const { address, status, isConnected } = useAccount();
-	const { gameId, setGameId } = usePoker();
+	const { isConnected } = useAccount();
+	const { gameId, setGameId, communityCards, addPlayer, getPlayerHand, players, setNewDeck, dealHand, dealCommunityCards, deck } = usePoker();
 
 	const startNewGame = () => {
 		// Generate a new game ID (you might want to use a more robust method)
 		const newGameId = Math.random().toString(36).substring(2, 15);
 		setGameId(newGameId);
+		addPlayer({ id: 1, name: "Player 1" });
+		addPlayer({ id: 2, name: "Player 2" });
+		addPlayer({ id: 3, name: "Player 3" });
+		addPlayer({ id: 4, name: "Player 4" });
+		addPlayer({ id: 5, name: "Player 5" });
+		addPlayer({ id: 6, name: "You" });
+		setNewDeck();
 	};
+
+	useEffect(() => {
+		if (deck && deck.length === 52) {
+			dealHand(deck, 1);
+			dealHand(deck, 2);
+			dealHand(deck, 3);
+			dealHand(deck, 4);
+			dealHand(deck, 5);
+			dealHand(deck, 6);
+			dealCommunityCards(deck);
+		}
+	}, [dealHand, dealCommunityCards, deck]);
 
 	const copyGameId = () => {
 		navigator.clipboard.writeText(gameId);
@@ -41,6 +57,8 @@ export default function GameUX() {
 			setGameId(joinGameId);
 		}
 	};
+
+	const yourHand = getPlayerHand(6);
 
 	return (
 		<div className="relative w-full h-screen overflow-hidden">
@@ -88,7 +106,7 @@ export default function GameUX() {
 
 			{XmtpClient && gameId && (
 				<div className="relative w-full h-full">
-					<PokerTable players={demoPlayers} communityCards={communityCards} yourHand={yourHand} />
+					<PokerTable players={players} communityCards={communityCards} yourHand={yourHand} />
 					<div className="absolute bottom-4 left-4 bg-white bg-opacity-90 p-1 rounded-md shadow-sm flex flex-row space-x-2 align-middle justify-center items-center">
 						<p className="text-md font-semibold">Game ID: {gameId}</p>
 						<button onClick={copyGameId} className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300 text-sm">
