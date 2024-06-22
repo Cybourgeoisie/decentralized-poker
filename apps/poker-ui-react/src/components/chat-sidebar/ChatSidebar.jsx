@@ -7,8 +7,6 @@ const ChatSidebar = () => {
 	const { conversation } = useXMTP();
 	const [isOpen, setIsOpen] = useState(false);
 
-	console.log({ conversation });
-
 	const toggleSidebar = () => {
 		setIsOpen(!isOpen);
 	};

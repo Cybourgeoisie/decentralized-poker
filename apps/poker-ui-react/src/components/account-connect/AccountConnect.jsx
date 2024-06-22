@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { ConnectKitButton } from "connectkit";
-import { useAccount, useDisconnect, useWalletClient } from "wagmi";
+import { useAccount, useWalletClient } from "wagmi";
 import { Avatar, Name } from "@coinbase/onchainkit/identity";
 import styled from "styled-components";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
-import { Button } from "../ui/button";
 import { useXMTP } from "../../providers/XMTPHelperProvider";
+import DisconnectDialog from "./DisconnectDialog";
 
 const StyledButton = styled.button`
 	cursor: pointer;
@@ -32,24 +31,16 @@ const StyledButton = styled.button`
 
 export default function AccountConnect() {
 	const { address, status, isConnected } = useAccount();
-	const { disconnect } = useDisconnect();
 	const { data: walletClient } = useWalletClient();
-	const [isOpen, setIsOpen] = useState(false);
 
-	const { initXmtp, isInitialized: isXmtpInitialized, disconnect: xmtpDisconnect, startNewConversation } = useXMTP();
-
-	const handleDisconnect = () => {
-		disconnect();
-		xmtpDisconnect(null);
-		setIsOpen(false);
-	};
+	const { initXmtp, isInitialized: isXmtpInitialized, startNewConversation } = useXMTP();
 
 	useEffect(() => {
 		if (isConnected && walletClient && !isXmtpInitialized) {
 			initXmtp(walletClient);
 		}
 
-		if (isXmtpInitialized) {
+		if (isConnected && walletClient && isXmtpInitialized) {
 			startNewConversation(
 				walletClient.account.address.toLowerCase() == "0x9eE5E3Ff06425CF972E77c195F70Ecb18aC23d7f".toLowerCase()
 					? "0x1f48c5CA2DAA443A8413FA7a206D6a07FB7CCd04"
@@ -108,32 +99,7 @@ export default function AccountConnect() {
 								</TooltipContent>
 							</Tooltip>
 						</TooltipProvider>
-						<Dialog open={isOpen} onOpenChange={setIsOpen}>
-							<DialogTrigger asChild>
-								<button type="button" className="pointer-events-auto" onClick={() => setIsOpen(true)}>
-									<svg fill="#ffffff" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="icon">
-										<path
-											transform="scale(0.025)"
-											d="M832.6 191.4c-84.6-84.6-221.5-84.6-306 0l-96.9 96.9 51 51 96.9-96.9c53.8-53.8 144.6-59.5 204 0 59.5 59.5 53.8 150.2 0 204l-96.9 96.9 51.1 51.1 96.9-96.9c84.4-84.6 84.4-221.5-.1-306.1zM446.5 781.6c-53.8 53.8-144.6 59.5-204 0-59.5-59.5-53.8-150.2 0-204l96.9-96.9-51.1-51.1-96.9 96.9c-84.6 84.6-84.6 221.5 0 306s221.5 84.6 306 0l96.9-96.9-51-51-96.8 97zM260.3 209.4a8.03 8.03 0 0 0-11.3 0L209.4 249a8.03 8.03 0 0 0 0 11.3l554.4 554.4c3.1 3.1 8.2 3.1 11.3 0l39.6-39.6c3.1-3.1 3.1-8.2 0-11.3L260.3 209.4z"
-										/>
-									</svg>
-								</button>
-							</DialogTrigger>
-							<DialogContent className="sm:max-w-[425px]">
-								<DialogHeader>
-									<DialogTitle>Disconnect Wallet</DialogTitle>
-									<DialogDescription>Are you sure you want to disconnect your wallet?</DialogDescription>
-								</DialogHeader>
-								<DialogFooter>
-									<Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
-										Cancel
-									</Button>
-									<Button type="button" variant="destructive" onClick={handleDisconnect}>
-										Disconnect
-									</Button>
-								</DialogFooter>
-							</DialogContent>
-						</Dialog>
+						<DisconnectDialog />
 					</>
 				);
 			})()}

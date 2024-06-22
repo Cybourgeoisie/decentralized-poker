@@ -1,14 +1,16 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { ChatInput } from "./ChatInput";
-import { useMessages, useSendMessage, useStreamMessages, useClient } from "@xmtp/react-sdk";
+import { useMessages, useStreamMessages, useClient } from "@xmtp/react-sdk";
 import ChatItem from "./ChatItem";
+import { useXMTP } from "../../providers/XMTPHelperProvider";
 
 export const ChatContainer = ({ conversation, isPWA = false, isContained = false }) => {
 	const messagesEndRef = useRef(null);
 	const [messageHistory, setMessageHistory] = useState([]);
-	const { sendMessage } = useSendMessage();
 	const { client } = useClient();
 	const { messages, isLoading } = useMessages(conversation);
+
+	const { sendMessage } = useXMTP();
 
 	const onMessage = useCallback((message) => {
 		console.log("New message received:", message);
@@ -20,11 +22,10 @@ export const ChatContainer = ({ conversation, isPWA = false, isContained = false
 
 	const handleSendMessage = async (newMessage) => {
 		if (!newMessage.trim()) {
-			alert("empty message");
 			return;
 		}
 		if (conversation && conversation.peerAddress) {
-			await sendMessage(conversation, newMessage);
+			await sendMessage(newMessage);
 		}
 	};
 
@@ -41,7 +42,7 @@ export const ChatContainer = ({ conversation, isPWA = false, isContained = false
 				<small className="text-center">Loading messages...</small>
 			) : (
 				<>
-					<ul className="px-1 m-0 flex-grow flex flex-col items-start overflow-y-auto">
+					<ul className="px-1 py-1 m-0 flex-grow flex flex-col items-start overflow-y-auto">
 						{messages.slice().map((message) => (
 							<ChatItem isPWA={isPWA} key={message.id} message={message} senderAddress={message.senderAddress} client={client} />
 						))}

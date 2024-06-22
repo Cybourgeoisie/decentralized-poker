@@ -1,10 +1,8 @@
 import React from "react";
 import { Card } from "../ui/card";
+import PokerCard from "./PokerCard";
 
-export default function PokerTable({ players }) {
-	const communityCards = ["♠A", "♥K", "♦Q", "♣J", "♠10"];
-	const yourHand = ["♥A", "♥K", "♦Q", "♣J", "♠10"];
-
+export default function PokerTable({ players, communityCards, yourHand }) {
 	// Ensure the number of players is between 2 and 6
 	const numPlayers = Math.max(2, Math.min(6, players.length));
 
@@ -14,9 +12,7 @@ export default function PokerTable({ players }) {
 				{/* Community cards */}
 				<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex space-x-2">
 					{communityCards.map((card, index) => (
-						<Card key={index} className="w-10 h-14 flex items-center justify-center bg-white text-black">
-							{card}
-						</Card>
+						<PokerCard key={index} className="w-10 h-14" value={card} />
 					))}
 				</div>
 			</div>
@@ -32,11 +28,8 @@ export default function PokerTable({ players }) {
 							<div>{player.name}</div>
 						</div>
 						<div className="flex justify-center space-x-1">
-							<Card className="w-4 h-6 rounded-sm bg-blue-500" />
-							<Card className="w-4 h-6 rounded-sm bg-blue-500" />
-							<Card className="w-4 h-6 rounded-sm bg-blue-500" />
-							<Card className="w-4 h-6 rounded-sm bg-blue-500" />
-							<Card className="w-4 h-6 rounded-sm bg-blue-500" />
+							<PokerCard />
+							<PokerCard />
 						</div>
 					</div>
 				);
@@ -46,9 +39,7 @@ export default function PokerTable({ players }) {
 			<div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center">
 				<div className="flex space-x-2 mb-2">
 					{yourHand.map((card, index) => (
-						<Card key={index} className="w-16 h-24 flex items-center justify-center bg-white text-black text-2xl">
-							{card}
-						</Card>
+						<PokerCard key={index} className="w-16 h-24 text-2xl" value={card} />
 					))}
 				</div>
 				<div className="bg-gray-800 text-white p-2 rounded">

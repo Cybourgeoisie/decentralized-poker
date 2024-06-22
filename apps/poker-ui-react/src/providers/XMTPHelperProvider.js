@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useCallback } from "react";
-import { Client, useClient, useCanMessage, useStartConversation } from "@xmtp/react-sdk";
+import { Client, useClient, useCanMessage, useStartConversation, useSendMessage } from "@xmtp/react-sdk";
 
 const XMTPContext = createContext();
 
@@ -37,6 +37,7 @@ export const XMTPHelperProvider = ({ children }) => {
 	const { client, initialize, disconnect: disconnectClient } = useClient();
 	const { startConversation } = useStartConversation();
 	const { canMessage } = useCanMessage();
+	const { sendMessage } = useSendMessage();
 
 	const getAddress = async (signer) => {
 		try {
@@ -98,11 +99,15 @@ export const XMTPHelperProvider = ({ children }) => {
 		}
 	}, [client, disconnectClient]);
 
+	const formatMessage = function (messageType, message) {
+		return JSON.stringify({ type: messageType, message });
+	};
+
 	const startNewConversation = useCallback(
 		async (address) => {
 			if (client && (await canMessage(address))) {
 				try {
-					const newConversation = await startConversation(address, "Hello!");
+					const newConversation = await startConversation(address, formatMessage("connect", ""));
 					setConversation(newConversation.conversation);
 					return newConversation;
 				} catch (error) {
@@ -113,11 +118,13 @@ export const XMTPHelperProvider = ({ children }) => {
 		[client, canMessage, startConversation],
 	);
 
-	const sendMessage = useCallback(
+	const sendMessageWrapper = useCallback(
 		async (message) => {
 			if (conversation) {
 				try {
-					await conversation.send(message);
+					if (conversation && conversation.peerAddress) {
+						await sendMessage(conversation, formatMessage("chat", message));
+					}
 				} catch (error) {
 					console.error("Failed to send message:", error);
 				}
@@ -134,7 +141,7 @@ export const XMTPHelperProvider = ({ children }) => {
 		startNewConversation,
 		conversation,
 		messageHistory,
-		sendMessage,
+		sendMessage: sendMessageWrapper,
 	};
 
 	return <XMTPContext.Provider value={value}>{children}</XMTPContext.Provider>;
