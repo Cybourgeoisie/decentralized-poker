@@ -2,7 +2,7 @@ import { useMessages, useStreamMessages } from "@xmtp/react-sdk";
 import { useXMTP } from "../providers/XMTPHelperProvider";
 import { useMemo } from "react";
 
-export const useXMTPConversation = () => {
+export const useXMTPConversation = ({ gameId }) => {
 	const { conversations } = useXMTP();
 
 	// Use individual hooks for each conversation
@@ -58,8 +58,16 @@ export const useXMTPConversation = () => {
 					}
 				})(message),
 			}))
+			.filter((message) => message.gameId === gameId)
 			.sort((a, b) => a.timestamp - b.timestamp);
-	}, [messages0, messages1, messages2, messages3, messages4]);
+	}, [messages0, messages1, messages2, messages3, messages4, gameId]);
 
-	return { formattedMessages };
+	// Now, split out the formatted messages into chat messages and game state messages
+	const chatMessages = formattedMessages.filter((msg) => msg.type === "chat").filter((message) => new Date() - message.timestamp < 30 * 60 * 1000);
+	const gameMessages = formattedMessages.filter((msg) => msg.type === "game");
+
+	return {
+		chatMessages,
+		gameMessages,
+	};
 };

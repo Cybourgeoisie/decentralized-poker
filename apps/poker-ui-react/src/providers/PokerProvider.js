@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useReducer, useCallback } from "react";
-import pokersolver from "pokersolver";
 
 const Suits = ["d", "c", "h", "s"];
 const Ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"];
@@ -133,17 +132,10 @@ export function PokerProvider({ children }) {
 		[setCommunityCards],
 	);
 
-	const evaluateHand = useCallback((playerHand, communityCards) => {
-		if (!playerHand || !communityCards || (playerHand.length === 0 && communityCards.length === 0)) return { descr: "No hand" };
-		const hand = pokersolver.Hand.solve([...playerHand, ...communityCards]);
-		return hand;
-	}, []);
-
 	// Value object to be provided
 	const value = {
 		gameId: state.gameId,
 		players: state.players,
-		evaluateHand,
 		deck: state.deck,
 		setNewDeck,
 		dealHand,

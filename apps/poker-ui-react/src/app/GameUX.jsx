@@ -6,35 +6,14 @@ import PokerTable from "../components/poker/PokerTable";
 
 // test: KDVDzBJqIX
 
-const demoPlayers = [
-	{ id: 1, name: "Player 1" },
-	{ id: 2, name: "Player 2" },
-	{ id: 3, name: "Player 3" },
-	{ id: 4, name: "Player 4" },
-	{ id: 5, name: "Player 5" },
-	{ id: 6, name: "You" },
-];
-
-export default function GameUX() {
+export default function GameUX({ gameId, setGameId, registerNewGame, joinGame }) {
 	const { client: XmtpClient, startNewConversation, sendMessage } = useXMTP();
+
+	const [showRegisterGameForm, setShowRegisterGameForm] = useState(false);
 	const [joinGameId, setJoinGameId] = useState("");
 	const [copiedToClipboard, setCopiedToClipboard] = useState(false);
-	const { communityCards, setCommunityCards, addPlayer, getPlayerHand, players, setNewDeck, dealHand, dealCommunityCards, deck, setGameId, gameId } =
-		usePoker();
-	const {
-		address,
-		isConnected,
-		hash,
-		error,
-		isConfirming,
-		currentGameId,
-		setCurrentGameId,
-		gameData,
-		isLoadingGameData,
-		registerGame,
-		bytes16ToString,
-		generateRandomString,
-	} = useGameContract();
+	const { communityCards, addPlayer, getPlayerHand, players, setNewDeck, dealHand, dealCommunityCards, deck } = usePoker();
+	const { address, isConnected, hash, error, isConfirming, gameData, isLoadingGameData, bytes16ToString } = useGameContract();
 
 	useEffect(() => {
 		if (deck && deck.length === 52) {
@@ -43,11 +22,13 @@ export default function GameUX() {
 		}
 	}, [dealHand, dealCommunityCards, deck, players]);
 
+	/*
 	useEffect(() => {
 		if (communityCards && communityCards.length === 5) {
 			sendMessage(gameId, "game", JSON.stringify({ communityCards }));
 		}
 	}, [communityCards, gameId, sendMessage]);
+	*/
 
 	/*
 	useEffect(() => {
@@ -68,50 +49,8 @@ export default function GameUX() {
 	}, [formattedMessages, setCommunityCards, gameId]);
 	*/
 
-	useEffect(() => {
-		if (gameData && gameData.length > 0 && (!deck || deck.length === 0)) {
-			const [gameInfo, gamePlayers] = gameData;
-
-			if (gameInfo && gameInfo.result) {
-				const [gameId] = gameInfo.result;
-				if (gameId.length > 0 && gameId !== "0x00000000000000000000000000000000") {
-					const stringGameId = bytes16ToString(gameId);
-					setGameId(stringGameId);
-					setCurrentGameId(stringGameId);
-					startNewConversation(stringGameId, "0x937C0d4a6294cdfa575de17382c7076b579DC176");
-
-					if (gamePlayers && gamePlayers.result) {
-						gamePlayers.result.forEach((player, index) => {
-							if (player.toLowerCase() !== address.toLowerCase()) {
-								addPlayer({ id: index + 1, name: String(player).substring(0, 10), address: String(player) });
-								startNewConversation(stringGameId, player);
-							}
-						});
-					}
-
-					addPlayer({ id: 6, name: "You" });
-					setNewDeck();
-				}
-			}
-		}
-	}, [gameData, deck, bytes16ToString, setCurrentGameId, startNewConversation, addPlayer, setNewDeck, address, setGameId]);
-
-	const startNewGame = async () => {
-		const newGameId = await generateRandomString();
-		setCurrentGameId(newGameId);
-		addPlayer({ id: 6, name: "You" });
-		setNewDeck();
-		registerGame(newGameId, 2, ["0xC27A7a787b3A115435DF8Fa154Ff0DfA0C63E276"]);
-	};
-
-	const joinGame = async () => {
-		if (joinGameId.trim()) {
-			setCurrentGameId(joinGameId);
-		}
-	};
-
 	const copyGameId = () => {
-		navigator.clipboard.writeText(currentGameId);
+		navigator.clipboard.writeText(gameId);
 		setCopiedToClipboard(true);
 		setTimeout(() => setCopiedToClipboard(false), 2000);
 	};
@@ -124,9 +63,11 @@ export default function GameUX() {
 	return (
 		<div className="relative w-full h-screen overflow-hidden">
 			{/* Poker table background */}
-			<div className="absolute inset-0 z-0">
-				<PokerTable players={demoPlayers} communityCards={communityCards} yourHand={yourHand} />
-			</div>
+			{!XmtpClient || !gameId ? (
+				<div className="absolute inset-0 z-0">
+					<PokerTable communityCards={communityCards} yourHand={yourHand} />
+				</div>
+			) : null}
 
 			{(!XmtpClient || !isConnected) && (
 				<div className="absolute inset-0 z-10 flex items-center justify-center bg-black bg-opacity-70">
@@ -137,13 +78,13 @@ export default function GameUX() {
 				</div>
 			)}
 
-			{XmtpClient && isConnected && !currentGameId && (
+			{XmtpClient && isConnected && !gameId && (
 				<div className="absolute inset-0 z-10 flex items-center justify-center bg-black bg-opacity-70">
 					<div className="text-center p-8 bg-white bg-opacity-90 rounded-lg shadow-xl">
 						<h2 className="text-2xl font-bold text-gray-800 mb-6">Choose an Option</h2>
 						<div className="space-y-4">
 							<button
-								onClick={startNewGame}
+								onClick={setShowRegisterGameForm.bind(null, true)}
 								className="w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300"
 							>
 								Start New Game
@@ -156,7 +97,12 @@ export default function GameUX() {
 									placeholder="Enter Game ID"
 									className="flex-grow py-2 px-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
 								/>
-								<button onClick={joinGame} className="py-2 px-4 bg-green-500 text-white rounded hover:bg-green-600 transition duration-300">
+								<button
+									onClick={() => {
+										joinGame(joinGameId);
+									}}
+									className="py-2 px-4 bg-green-500 text-white rounded hover:bg-green-600 transition duration-300"
+								>
 									Join Game
 								</button>
 							</div>
@@ -165,7 +111,86 @@ export default function GameUX() {
 				</div>
 			)}
 
-			{XmtpClient && isConfirming && (
+			{XmtpClient && isConnected && showRegisterGameForm && !gameId && (
+				<div className="absolute inset-0 z-10 flex items-center justify-center bg-black bg-opacity-70">
+					<div className="text-center p-8 bg-white bg-opacity-90 rounded-lg shadow-xl">
+						<h2 className="text-2xl font-bold text-gray-800 mb-6">Register New Game</h2>
+						<div className="space-y-4">
+							{/* Five text fields to set addresses for players */}
+							<div className="space-y-2">
+								<input
+									type="text"
+									id="player1"
+									placeholder="Player 1 (0x...)"
+									className="w-full py-2 px-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+								/>
+							</div>
+							<div className="space-y-2">
+								<input
+									type="text"
+									id="player2"
+									placeholder="(Optional) Player 2 (0x...)"
+									className="w-full py-2 px-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+								/>
+							</div>
+							<div className="space-y-2">
+								<input
+									type="text"
+									id="player3"
+									placeholder="(Optional) Player 3 (0x...)"
+									className="w-full py-2 px-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+								/>
+							</div>
+							<div className="space-y-2">
+								<input
+									type="text"
+									id="player4"
+									placeholder="(Optional) Player 4 (0x...)"
+									className="w-full py-2 px-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+								/>
+							</div>
+							<div className="space-y-2">
+								<input
+									type="text"
+									id="player5"
+									placeholder="(Optional) Player 5 (0x...)"
+									className="w-full py-2 px-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+								/>
+							</div>
+
+							<button
+								onClick={() => {
+									// Pull the addresses from the input fields
+									const player1 = document.getElementById("player1").value;
+									const player2 = document.getElementById("player2").value;
+									const player3 = document.getElementById("player3").value;
+									const player4 = document.getElementById("player4").value;
+									const player5 = document.getElementById("player5").value;
+
+									// Required to have at least one player
+									if (!player1) {
+										alert("Please enter at least one player address.");
+										return;
+									}
+
+									registerNewGame([player1, player2, player3, player4, player5]);
+								}}
+								className="w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300"
+							>
+								Register New Game
+							</button>
+							<button
+								onClick={setShowRegisterGameForm.bind(null, false)}
+								className="w-full py-2 px-4 bg-gray-500 text-white rounded hover:bg-gray-600 transition duration-300"
+							>
+								Cancel
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{XmtpClient && isConfirming && !gameId && (
 				<div className="absolute inset-0 z-10 flex items-center justify-center bg-black bg-opacity-70">
 					<div className="text-center p-8 bg-white bg-opacity-90 rounded-lg shadow-xl">
 						<h1 className="text-3xl font-bold text-gray-800 mb-4">Waiting for Transaction Confirmation...</h1>
@@ -188,11 +213,11 @@ export default function GameUX() {
 				</div>
 			)}
 
-			{XmtpClient && currentGameId && (
+			{XmtpClient && gameId && (
 				<div className="relative w-full h-full">
 					<PokerTable players={players} communityCards={communityCards} yourHand={yourHand} />
 					<div className="absolute bottom-4 left-4 bg-white bg-opacity-90 p-1 rounded-md shadow-sm flex flex-row space-x-2 align-middle justify-center items-center">
-						<p className="text-md font-semibold">Game ID: {currentGameId}</p>
+						<p className="text-md font-semibold">Game ID: {gameId}</p>
 						<button onClick={copyGameId} className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300 text-sm">
 							{copiedToClipboard ? "Copied!" : "Copy ID"}
 						</button>

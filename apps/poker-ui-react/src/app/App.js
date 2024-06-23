@@ -4,14 +4,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { baseSepolia, base } from "wagmi/chains";
 import { coinbaseWallet } from "wagmi/connectors";
-import AccountConnect from "../components/account-connect/AccountConnect";
 import { ConnectKitProvider } from "connectkit";
-import GameUX from "./GameUX";
-import ChatSidebar from "../components/chat-sidebar/ChatSidebar";
 import { XMTPProvider } from "@xmtp/react-sdk";
 import { XMTPHelperProvider } from "../providers/XMTPHelperProvider";
 import { PokerProvider } from "../providers/PokerProvider";
 import { ContractProvider } from "../providers/ContractProvider";
+import AppUX from "./AppUX";
 
 const wagmiConfig = createConfig({
 	chains: [baseSepolia, base],
@@ -40,18 +38,7 @@ function App() {
 						<XMTPHelperProvider>
 							<PokerProvider>
 								<ContractProvider>
-									<div className="App">
-										{/* Account Connect */}
-										<header className="text-white flex flex-row items-end w-full p-4 absolute z-50 pointer-events-none">
-											<AccountConnect />
-										</header>
-
-										{/* Game UX */}
-										<GameUX />
-
-										{/* Chat Sidebar */}
-										<ChatSidebar />
-									</div>
+									<AppUX />
 								</ContractProvider>
 							</PokerProvider>
 						</XMTPHelperProvider>

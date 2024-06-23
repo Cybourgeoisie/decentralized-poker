@@ -29,7 +29,7 @@ const StyledButton = styled.button`
 	}
 `;
 
-export default function AccountConnect() {
+export default function AccountConnect({ gameId, setGameId }) {
 	const { address, status, isConnected } = useAccount();
 	const { data: walletClient } = useWalletClient();
 
@@ -89,7 +89,7 @@ export default function AccountConnect() {
 								</TooltipContent>
 							</Tooltip>
 						</TooltipProvider>
-						<DisconnectDialog />
+						<DisconnectDialog setGameId={setGameId} />
 					</>
 				);
 			})()}

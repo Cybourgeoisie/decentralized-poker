@@ -1,11 +1,7 @@
 import React, { useState } from "react";
-import { useXMTP } from "../../providers/XMTPHelperProvider";
-import { usePoker } from "../../providers/PokerProvider";
 
 export const ChatInput = ({ onSendMessage, replyingToMessage, isPWA = false }) => {
 	const [newMessage, setNewMessage] = useState("");
-	const { gameId } = usePoker();
-	const { sendMessage } = useXMTP();
 
 	const handleInputChange = (event) => {
 		setNewMessage(event.target.value);
@@ -19,8 +15,8 @@ export const ChatInput = ({ onSendMessage, replyingToMessage, isPWA = false }) =
 	};
 
 	const handleSendMessage = () => {
-		if (newMessage.trim() && gameId) {
-			sendMessage(gameId, "chat", newMessage);
+		if (newMessage.trim()) {
+			onSendMessage(newMessage);
 			setNewMessage("");
 		}
 	};

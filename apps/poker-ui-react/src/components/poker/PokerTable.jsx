@@ -1,12 +1,22 @@
 import React from "react";
 import PokerCard from "./PokerCard";
-import { usePoker } from "../../providers/PokerProvider";
+import evaluateHand from "../../utils/PokerSolver";
 
 export default function PokerTable({ players, communityCards, yourHand }) {
+	if (!players) {
+		players = [
+			{ id: 1, name: "Demo Player 1" },
+			{ id: 2, name: "Demo Player 2" },
+			{ id: 3, name: "Demo Player 3" },
+			{ id: 4, name: "Demo Player 4" },
+			{ id: 5, name: "Demo Player 5" },
+			{ id: 6, name: "You" },
+		];
+	}
+
 	// Ensure the number of players is between 2 and 6
 	const numPlayers = Math.max(2, Math.min(6, players.length));
 
-	const { evaluateHand } = usePoker();
 	const hand = evaluateHand(yourHand, communityCards);
 	const handDescription = hand ? hand.descr : "No hand";
 

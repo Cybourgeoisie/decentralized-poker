@@ -10,7 +10,7 @@ const ContractAddresses = {
 };
 
 export const ContractProvider = ({ children }) => {
-	const [currentGameId, setCurrentGameId] = useState(null);
+	const [gameId, setGameId] = useState(null);
 	const { address, isConnected } = useAccount();
 	const { data: hash, error, writeContract } = useWriteContract();
 
@@ -28,8 +28,8 @@ export const ContractProvider = ({ children }) => {
 	};
 
 	const formattedGameId = useMemo(() => {
-		return currentGameId ? zeroPadBytes(hexlify(toUtf8Bytes(currentGameId)), 16) : "";
-	}, [currentGameId]);
+		return gameId ? zeroPadBytes(hexlify(toUtf8Bytes(gameId)), 16) : "";
+	}, [gameId]);
 
 	const { data: gameData, isLoading: isLoadingGameData } = useReadContracts({
 		contracts: [
@@ -46,8 +46,6 @@ export const ContractProvider = ({ children }) => {
 		],
 		enabled: !!formattedGameId,
 	});
-
-	console.log({ gameData });
 
 	const registerGame = useCallback(
 		async (newGameId, maxPlayers, players) => {
@@ -86,8 +84,8 @@ export const ContractProvider = ({ children }) => {
 	const value = {
 		address,
 		isConnected,
-		currentGameId,
-		setCurrentGameId,
+		gameId,
+		setGameId,
 		hash,
 		error,
 		isConfirming,

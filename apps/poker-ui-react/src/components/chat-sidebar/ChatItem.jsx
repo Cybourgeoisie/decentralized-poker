@@ -1,10 +1,8 @@
 import React from "react";
-import { useClient, ContentTypeId } from "@xmtp/react-sdk";
-import { usePoker } from "../../providers/PokerProvider";
+import { useClient } from "@xmtp/react-sdk";
 
 const ChatItem = ({ message, senderAddress, isPWA = false }) => {
 	const { client } = useClient();
-	const { gameId } = usePoker();
 
 	const renderFooter = (timestamp) => {
 		return (
@@ -16,8 +14,6 @@ const ChatItem = ({ message, senderAddress, isPWA = false }) => {
 
 	const renderMessage = (message) => {
 		if (!message) return null;
-		if (message.type !== "chat") return null;
-		if (message.gameId !== gameId) return null;
 
 		return (
 			<div className="flex flex-row">

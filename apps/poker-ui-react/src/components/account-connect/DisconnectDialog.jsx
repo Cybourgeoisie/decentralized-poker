@@ -3,14 +3,12 @@ import { useDisconnect } from "wagmi";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { useXMTP } from "../../providers/XMTPHelperProvider";
-import { usePoker } from "../../providers/PokerProvider";
 
-export default function DisconnectDialog() {
+export default function DisconnectDialog({ setGameId }) {
 	const { disconnect } = useDisconnect();
 	const [isOpen, setIsOpen] = useState(false);
 
 	const { disconnect: xmtpDisconnect } = useXMTP();
-	const { setGameId } = usePoker();
 
 	const handleDisconnect = () => {
 		setGameId(null);

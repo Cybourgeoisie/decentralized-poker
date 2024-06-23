@@ -3,7 +3,7 @@ import { MessageCircle, X } from "lucide-react";
 import { ChatContainer } from "./ChatContainer";
 import { useXMTP } from "../../providers/XMTPHelperProvider";
 
-const ChatSidebar = () => {
+const ChatSidebar = ({ gameId }) => {
 	const { conversations } = useXMTP();
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -28,7 +28,7 @@ const ChatSidebar = () => {
 					isOpen ? "translate-x-0" : "translate-x-full"
 				}`}
 			>
-				{conversations && conversations.length > 0 ? <ChatContainer /> : null}
+				{conversations && conversations.length > 0 ? <ChatContainer gameId={gameId} /> : null}
 			</div>
 		</div>
 	);
