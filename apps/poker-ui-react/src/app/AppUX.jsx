@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AccountConnect from "../components/account-connect/AccountConnect";
+import GameSetupUX from "./GameSetupUX";
 import GameUX from "./GameUX";
 import ChatSidebar from "../components/chat-sidebar/ChatSidebar";
 import { useXMTP } from "../providers/XMTPHelperProvider";
@@ -7,10 +8,11 @@ import { usePoker } from "../providers/PokerProvider";
 import { useGameContract } from "../providers/ContractProvider";
 
 export default function AppUX() {
-	const { client: XmtpClient, startNewConversation, sendMessage } = useXMTP();
-	const { communityCards, addPlayer, getPlayerHand, players, setNewDeck, dealHand, dealCommunityCards, deck } = usePoker();
+	const { startNewConversation } = useXMTP();
+	const { addPlayer, players, setDealer } = usePoker();
 	const { address, gameId, setGameId, gameData, bytes16ToString, registerGame, generateRandomString, isConfirmed } = useGameContract();
 	const [newGameId, setNewGameId] = useState(null);
+	const [invalidGameId, setInvalidGameId] = useState(false);
 
 	const registerNewGame = async (players = []) => {
 		const newGameId = await generateRandomString();
@@ -35,14 +37,14 @@ export default function AppUX() {
 	}, [isConfirmed, setGameId, newGameId, gameId]);
 
 	useEffect(() => {
-		if (gameData && gameData.length > 0 && (!deck || deck.length === 0)) {
+		if (gameData && gameData.length > 0 && (!players || players.length === 0)) {
 			const [gameInfo, gamePlayers] = gameData;
 
 			if (!gameInfo || !gameInfo.result) {
 				return;
 			}
 
-			const [hexGameId] = gameInfo.result;
+			const [hexGameId, , creator] = gameInfo.result;
 			if (hexGameId.length > 0 && hexGameId !== "0x00000000000000000000000000000000") {
 				const stringGameId = bytes16ToString(hexGameId);
 				if (gameId !== stringGameId) {
@@ -50,7 +52,8 @@ export default function AppUX() {
 					return;
 				}
 
-				console.log("connecting...");
+				// The dealer is the creator of the game
+				setDealer(creator);
 
 				if (gamePlayers && gamePlayers.result) {
 					gamePlayers.result.forEach((player, index) => {
@@ -61,11 +64,12 @@ export default function AppUX() {
 					});
 				}
 
-				addPlayer({ id: 6, name: "You" });
-				setNewDeck();
+				addPlayer({ id: 6, name: "You", address });
+			} else if (hexGameId === "0x00000000000000000000000000000000") {
+				setInvalidGameId(true);
 			}
 		}
-	}, [gameId, gameData, deck, bytes16ToString, setGameId, startNewConversation, addPlayer, setNewDeck, address, generateRandomString]);
+	}, [gameId, gameData, bytes16ToString, startNewConversation, addPlayer, address, setInvalidGameId, setDealer]);
 
 	return (
 		<div className="App">
@@ -75,7 +79,17 @@ export default function AppUX() {
 			</header>
 
 			{/* Game UX */}
-			<GameUX gameId={gameId} setGameId={setGameId} registerNewGame={registerNewGame} joinGame={joinGame} />
+			<GameUX gameId={gameId} players={players} />
+
+			{/* Game Setup UX */}
+			<GameSetupUX
+				gameId={gameId}
+				setGameId={setGameId}
+				registerNewGame={registerNewGame}
+				joinGame={joinGame}
+				invalidGameId={invalidGameId}
+				setInvalidGameId={setInvalidGameId}
+			/>
 
 			{/* Chat Sidebar */}
 			<ChatSidebar gameId={gameId} />

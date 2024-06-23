@@ -10,6 +10,8 @@ const getNewDeck = () => {
 // Define the initial state
 const initialState = {
 	gameId: null,
+	dealer: null,
+	deck: [],
 	players: [],
 	communityCards: [],
 	pot: 0,
@@ -27,6 +29,7 @@ const SET_POT = "SET_POT";
 const SET_CURRENT_TURN = "SET_CURRENT_TURN";
 const SET_GAME_STAGE = "SET_GAME_STAGE";
 const SET_DECK = "SET_DECK";
+const SET_DEALER = "SET_DEALER";
 
 // Reducer function
 function pokerReducer(state, action) {
@@ -56,6 +59,8 @@ function pokerReducer(state, action) {
 			return { ...state, gameStage: action.payload };
 		case SET_DECK:
 			return { ...state, deck: action.payload };
+		case SET_DEALER:
+			return { ...state, dealer: action.payload };
 		default:
 			return state;
 	}
@@ -107,6 +112,10 @@ export function PokerProvider({ children }) {
 		dispatch({ type: SET_DECK, payload: deck });
 	}, []);
 
+	const setDealer = useCallback((dealer) => {
+		dispatch({ type: SET_DEALER, payload: dealer });
+	}, []);
+
 	// Function to get a player's hand
 	const getPlayerHand = useCallback(
 		(playerId) => {
@@ -138,6 +147,8 @@ export function PokerProvider({ children }) {
 		players: state.players,
 		deck: state.deck,
 		setNewDeck,
+		setDealer,
+		dealer: state.dealer,
 		dealHand,
 		dealCommunityCards,
 		communityCards: state.communityCards,

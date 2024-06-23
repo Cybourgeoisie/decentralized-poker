@@ -2,7 +2,7 @@ import React from "react";
 import PokerCard from "./PokerCard";
 import evaluateHand from "../../utils/PokerSolver";
 
-export default function PokerTable({ players, communityCards, yourHand }) {
+export default function PokerTable({ players, communityCards, yourHand, dealer }) {
 	if (!players) {
 		players = [
 			{ id: 1, name: "Demo Player 1" },
@@ -47,8 +47,15 @@ export default function PokerTable({ players, communityCards, yourHand }) {
 							className="absolute text-center"
 							style={{ top: `calc(${top}%`, left: `${left}%`, transform: "translate(-50%, -50%)" }}
 						>
-							<div className="bg-gray-800 text-white p-2 rounded mb-2">
-								<div>{player.name}</div>
+							<div className="flex flex-row space-x-1 p-2">
+								<div className="bg-gray-800 text-white p-2 rounded">
+									<div>{player.name}</div>
+								</div>
+								{player.address === dealer && dealer && (
+									<div className="bg-gray-800 text-white p-2 rounded">
+										<div>Dealer</div>
+									</div>
+								)}
 							</div>
 							<div className="flex justify-center space-x-1">
 								<PokerCard />
@@ -63,8 +70,15 @@ export default function PokerTable({ players, communityCards, yourHand }) {
 				<div className="flex space-x-2 mb-2">
 					{yourHand && yourHand.map((card, index) => <PokerCard key={index} className="w-16 h-24 text-2xl" value={card} />)}
 				</div>
-				<div className="bg-gray-800 text-white p-2 rounded">
-					<div>{handDescription}</div>
+				<div className="flex flex-row space-x-1">
+					<div className="bg-gray-800 text-white p-2 rounded">
+						<div>{handDescription}</div>
+					</div>
+					{players && players.length && players[players.length - 1].address === dealer && dealer && (
+						<div className="bg-gray-800 text-white p-2 rounded">
+							<div>Dealer</div>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
