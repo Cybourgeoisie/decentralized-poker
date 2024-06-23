@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { ChatContainer } from "./ChatContainer";
 import { useXMTP } from "../../providers/XMTPHelperProvider";
@@ -28,7 +28,7 @@ const ChatSidebar = () => {
 					isOpen ? "translate-x-0" : "translate-x-full"
 				}`}
 			>
-				{conversations && conversations.length > 0 ? <ChatContainer conversations={conversations} /> : null}
+				{conversations && conversations.length > 0 ? <ChatContainer /> : null}
 			</div>
 		</div>
 	);

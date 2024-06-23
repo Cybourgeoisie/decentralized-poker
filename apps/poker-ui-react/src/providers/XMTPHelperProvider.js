@@ -3,31 +3,15 @@ import { Client, useClient, useCanMessage, useStartConversation, useSendMessage,
 
 const XMTPContext = createContext();
 
-const ENCODING = "binary";
-
 const getEnv = () => {
 	// "dev" | "production" | "local"
 	return typeof process !== undefined && process.env.REACT_APP_XMTP_ENV ? process.env.REACT_APP_XMTP_ENV : "dev";
-};
-
-const buildLocalStorageKey = (walletAddress) => {
-	return walletAddress ? `xmtp:${getEnv()}:keys:${walletAddress}` : "";
-};
-
-const loadKeys = (walletAddress) => {
-	const val = localStorage.getItem(buildLocalStorageKey(walletAddress));
-	return val ? Buffer.from(val, ENCODING) : null;
-};
-
-const storeKeys = (walletAddress, keys) => {
-	localStorage.setItem(buildLocalStorageKey(walletAddress), Buffer.from(keys).toString(ENCODING));
 };
 
 export const useXMTP = () => useContext(XMTPContext);
 
 export const XMTPHelperProvider = ({ children }) => {
 	const [conversations, setConversations] = useState([]);
-	const [updatedConversation, setUpdatedConversation] = useState(0);
 	const [messageHistory, setMessageHistory] = useState([]);
 	const [isInitialized, setIsInitialized] = useState(false);
 
@@ -60,15 +44,11 @@ export const XMTPHelperProvider = ({ children }) => {
 				const address = await getAddress(walletClient);
 				if (!address) return;
 
-				let keys = loadKeys(address);
-				if (!keys) {
-					keys = await Client.getKeys(walletClient, {
-						...options,
-						skipContactPublishing: true,
-						persistConversations: false,
-					});
-					storeKeys(address, keys);
-				}
+				let keys = await Client.getKeys(walletClient, {
+					...options,
+					skipContactPublishing: true,
+					persistConversations: false,
+				});
 
 				try {
 					await initialize({ keys, options, signer: walletClient });
@@ -132,14 +112,13 @@ export const XMTPHelperProvider = ({ children }) => {
 						// if we make it here, just set the new conversation to the end of the list
 						return conversations.concat(newConversation.conversation);
 					});
-					setUpdatedConversation((prevIndex) => prevIndex + 1);
 					return newConversation;
 				} catch (error) {
 					console.error("Failed to start conversation:", error);
 				}
 			}
 		},
-		[client, canMessage, startConversation, setConversations, setUpdatedConversation],
+		[client, canMessage, startConversation, setConversations],
 	);
 
 	useEffect(() => {
@@ -147,7 +126,7 @@ export const XMTPHelperProvider = ({ children }) => {
 		startNewConversation("0", "0x937C0d4a6294cdfa575de17382c7076b579DC176");
 	}, [startNewConversation]);
 
-	const sendMessageWrapper = useCallback(
+	const broadcastMessageWrapper = useCallback(
 		async (gameId, type, message) => {
 			if (conversations) {
 				for (const conversation of conversations) {
@@ -172,13 +151,12 @@ export const XMTPHelperProvider = ({ children }) => {
 	const value = {
 		client,
 		isInitialized,
-		updatedConversation,
 		initXmtp,
 		disconnect,
 		startNewConversation,
 		conversations,
 		messageHistory,
-		sendMessage: sendMessageWrapper,
+		sendMessage: broadcastMessageWrapper,
 	};
 
 	return <XMTPContext.Provider value={value}>{children}</XMTPContext.Provider>;

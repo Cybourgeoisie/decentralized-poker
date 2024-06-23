@@ -16,39 +16,15 @@ const ChatItem = ({ message, senderAddress, isPWA = false }) => {
 
 	const renderMessage = (message) => {
 		if (!message) return null;
+		if (message.type !== "chat") return null;
+		if (message.gameId !== gameId) return null;
 
-		const contentType = ContentTypeId.fromString(message.contentType);
-		if (!contentType) return null;
-
-		try {
-			const codec = client.codecFor(contentType);
-			let content = message.content;
-			if (!codec) {
-				if (message?.contentFallback !== undefined) content = message?.contentFallback;
-				else return null;
-			}
-
-			// Only display "chat" messages
-			let jsonContent = {};
-			try {
-				jsonContent = JSON.parse(content);
-			} catch (e) {
-				return null;
-			}
-
-			if (jsonContent.type !== "chat") return null;
-			if (jsonContent.gameId !== gameId) return null;
-
-			return (
-				<div className="flex flex-row">
-					<div className="break-words">{jsonContent.message}</div>
-					{renderFooter(message.sentAt)}
-				</div>
-			);
-		} catch (e) {
-			console.error("Failed to render message", e);
-			return null;
-		}
+		return (
+			<div className="flex flex-row">
+				<div className="break-words">{message.message}</div>
+				{renderFooter(message.sentAt)}
+			</div>
+		);
 	};
 
 	const isSender = senderAddress === client?.address;

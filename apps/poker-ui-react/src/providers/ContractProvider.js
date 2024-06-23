@@ -47,6 +47,8 @@ export const ContractProvider = ({ children }) => {
 		enabled: !!formattedGameId,
 	});
 
+	console.log({ gameData });
+
 	const registerGame = useCallback(
 		async (newGameId, maxPlayers, players) => {
 			const formatted = zeroPadBytes(hexlify(toUtf8Bytes(newGameId)), 16);

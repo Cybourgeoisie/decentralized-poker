@@ -16,10 +16,11 @@ const demoPlayers = [
 ];
 
 export default function GameUX() {
-	const { client: XmtpClient, startNewConversation } = useXMTP();
+	const { client: XmtpClient, startNewConversation, sendMessage } = useXMTP();
 	const [joinGameId, setJoinGameId] = useState("");
 	const [copiedToClipboard, setCopiedToClipboard] = useState(false);
-	const { communityCards, addPlayer, getPlayerHand, players, setNewDeck, dealHand, dealCommunityCards, deck, setGameId } = usePoker();
+	const { communityCards, setCommunityCards, addPlayer, getPlayerHand, players, setNewDeck, dealHand, dealCommunityCards, deck, setGameId, gameId } =
+		usePoker();
 	const {
 		address,
 		isConnected,
@@ -41,6 +42,31 @@ export default function GameUX() {
 			dealCommunityCards(deck);
 		}
 	}, [dealHand, dealCommunityCards, deck, players]);
+
+	useEffect(() => {
+		if (communityCards && communityCards.length === 5) {
+			sendMessage(gameId, "game", JSON.stringify({ communityCards }));
+		}
+	}, [communityCards, gameId, sendMessage]);
+
+	/*
+	useEffect(() => {
+		if (formattedMessages && formattedMessages.length > 0) {
+			// Find any game type messages
+			const gameMessages = formattedMessages.filter((msg) => msg.type === "game" && msg.gameId === gameId);
+
+			// Go through all game messages, if we see "communityCards" then update the community cards
+			gameMessages.forEach((msg) => {
+				try {
+					const message = JSON.parse(msg.message);
+					if (message.communityCards) {
+						setCommunityCards(message.communityCards);
+					}
+				} catch (e) {}
+			});
+		}
+	}, [formattedMessages, setCommunityCards, gameId]);
+	*/
 
 	useEffect(() => {
 		if (gameData && gameData.length > 0 && (!deck || deck.length === 0)) {

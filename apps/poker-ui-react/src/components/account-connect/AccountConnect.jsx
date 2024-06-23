@@ -64,7 +64,7 @@ export default function AccountConnect() {
 
 				return (
 					<>
-						<Avatar address={address} showAttestation />
+						<Avatar address={address} />
 						<div className="flex flex-col text-sm">
 							<b>
 								<Name address={address} />
@@ -77,9 +77,7 @@ export default function AccountConnect() {
 									{isXmtpInitialized ? (
 										<div className="w-3 h-3 rounded-full bg-green-500 pointer-events-auto cursor-default" />
 									) : (
-										<button onClick={initXmtp} className="text-blue-500 text-xs pointer-events-auto cursor-pointer">
-											<div className="w-3 h-3 rounded-full bg-red-500" />
-										</button>
+										<div onClick={initXmtp} className="text-xs pointer-events-auto cursor-pointer w-3 h-3 rounded-full bg-red-500" />
 									)}
 								</TooltipTrigger>
 								<TooltipContent>
