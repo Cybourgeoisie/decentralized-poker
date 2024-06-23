@@ -69,7 +69,7 @@ export default function AppUX() {
 				setInvalidGameId(true);
 			}
 		}
-	}, [gameId, gameData, bytes16ToString, startNewConversation, addPlayer, address, setInvalidGameId, setDealer]);
+	}, [gameId, gameData, bytes16ToString, startNewConversation, addPlayer, address, setInvalidGameId, setDealer, players]);
 
 	return (
 		<div className="App">
