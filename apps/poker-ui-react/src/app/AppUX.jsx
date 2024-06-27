@@ -9,7 +9,7 @@ import { useGameContract } from "../providers/ContractProvider";
 
 export default function AppUX() {
 	const { startNewConversation } = useXMTP();
-	const { addPlayer, players, setDealer } = usePoker();
+	const { addPlayer, players, setDealerByAddress } = usePoker();
 	const { address, gameId, setGameId, gameData, bytes16ToString, registerGame, generateRandomString, isConfirmed } = useGameContract();
 	const [newGameId, setNewGameId] = useState(null);
 	const [invalidGameId, setInvalidGameId] = useState(false);
@@ -52,9 +52,6 @@ export default function AppUX() {
 					return;
 				}
 
-				// The dealer is the creator of the game
-				setDealer(creator);
-
 				if (gamePlayers && gamePlayers.result) {
 					gamePlayers.result.forEach((player, index) => {
 						if (player.toLowerCase() !== address.toLowerCase()) {
@@ -63,13 +60,15 @@ export default function AppUX() {
 						}
 					});
 				}
-
 				addPlayer({ id: 6, name: "You", address });
+
+				// The dealer is the creator of the game
+				setDealerByAddress(creator);
 			} else if (hexGameId === "0x00000000000000000000000000000000") {
 				setInvalidGameId(true);
 			}
 		}
-	}, [gameId, gameData, bytes16ToString, startNewConversation, addPlayer, address, setInvalidGameId, setDealer, players]);
+	}, [gameId, gameData, bytes16ToString, startNewConversation, addPlayer, address, setInvalidGameId, setDealerByAddress, players]);
 
 	return (
 		<div className="App">

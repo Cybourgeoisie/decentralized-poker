@@ -12,6 +12,16 @@ export default function GameUX({ gameId }) {
 	const [copiedToClipboard, setCopiedToClipboard] = useState(false);
 	const { communityCards, getPlayerHand, players, dealHand, dealCommunityCards, deck, setNewDeck, dealer } = usePoker();
 
+	/**
+	 *  The next part here is to make sure that everyone has a consistent state of the game:
+	 *    - make sure that all players ACK the game
+	 *    - show icons for players that have ACKed the game
+	 *    - once all ACKed, then dealer will start the game
+	 *    - track the game state & display the current state of the game
+	 *    - iterate through player turns
+	 *    - eventually add the mental poker requirements
+	 */
+
 	useEffect(() => {
 		if (!deck || deck.length === 0) {
 			setNewDeck();

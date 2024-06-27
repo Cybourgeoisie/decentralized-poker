@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback } from "react";
+import { Player } from "../classes/Player";
 
 const Suits = ["d", "c", "h", "s"];
 const Ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"];
@@ -14,10 +15,12 @@ const initialState = {
 	deck: [],
 	players: [],
 	communityCards: [],
-	pot: 0,
+	history: [],
 	currentTurn: null,
 	gameStage: "waiting", // waiting, preflop, flop, turn, river, showdown
 };
+
+// test: RQzvOgny9k
 
 // Define action types
 const SET_GAME_ID = "SET_GAME_ID";
@@ -25,7 +28,6 @@ const ADD_PLAYER = "ADD_PLAYER";
 const REMOVE_PLAYER = "REMOVE_PLAYER";
 const SET_PLAYER_HAND = "SET_PLAYER_HAND";
 const SET_COMMUNITY_CARDS = "SET_COMMUNITY_CARDS";
-const SET_POT = "SET_POT";
 const SET_CURRENT_TURN = "SET_CURRENT_TURN";
 const SET_GAME_STAGE = "SET_GAME_STAGE";
 const SET_DECK = "SET_DECK";
@@ -38,21 +40,19 @@ function pokerReducer(state, action) {
 			return { ...state, gameId: action.payload };
 		case ADD_PLAYER:
 			// Do not add duplicate players by ID
-			if (state.players.find((player) => player.id === action.payload.id)) {
+			if (state.players.find((player) => player.getId() === action.payload.id)) {
 				return state;
 			}
-			return { ...state, players: [...state.players, action.payload] };
+			return { ...state, players: [...state.players, new Player(action.payload)] };
 		case REMOVE_PLAYER:
-			return { ...state, players: state.players.filter((player) => player.id !== action.payload) };
+			return { ...state, players: state.players.filter((player) => player.getId() !== action.payload) };
 		case SET_PLAYER_HAND:
 			return {
 				...state,
-				players: state.players.map((player) => (player.id === action.payload.playerId ? { ...player, hand: action.payload.hand } : player)),
+				players: state.players.map((player) => (player.getId() === action.payload.id ? player.setHand(action.payload.hand) : player)),
 			};
 		case SET_COMMUNITY_CARDS:
 			return { ...state, communityCards: action.payload };
-		case SET_POT:
-			return { ...state, pot: action.payload };
 		case SET_CURRENT_TURN:
 			return { ...state, currentTurn: action.payload };
 		case SET_GAME_STAGE:
@@ -61,6 +61,13 @@ function pokerReducer(state, action) {
 			return { ...state, deck: action.payload };
 		case SET_DEALER:
 			return { ...state, dealer: action.payload };
+		/*
+			console.log("Setting dealer:", action.payload, "compared to", JSON.stringify(state.players));
+			return {
+				...state,
+				players: state.players.map((player) => (player.getAddress() === action.payload.id ? player.setIdDealer(true) : player.setIsDealer(false))),
+			};
+			*/
 		default:
 			return state;
 	}
@@ -87,15 +94,11 @@ export function PokerProvider({ children }) {
 	}, []);
 
 	const setPlayerHand = useCallback((playerId, hand) => {
-		dispatch({ type: SET_PLAYER_HAND, payload: { playerId, hand } });
+		dispatch({ type: SET_PLAYER_HAND, payload: { id: playerId, hand } });
 	}, []);
 
 	const setCommunityCards = useCallback((cards) => {
 		dispatch({ type: SET_COMMUNITY_CARDS, payload: cards });
-	}, []);
-
-	const setPot = useCallback((amount) => {
-		dispatch({ type: SET_POT, payload: amount });
 	}, []);
 
 	const setCurrentTurn = useCallback((playerId) => {
@@ -112,7 +115,8 @@ export function PokerProvider({ children }) {
 		dispatch({ type: SET_DECK, payload: deck });
 	}, []);
 
-	const setDealer = useCallback((dealer) => {
+	const setDealerByAddress = useCallback((dealer) => {
+		console.log("Setting dealer:", dealer);
 		dispatch({ type: SET_DEALER, payload: dealer });
 	}, []);
 
@@ -146,21 +150,19 @@ export function PokerProvider({ children }) {
 		gameId: state.gameId,
 		players: state.players,
 		deck: state.deck,
-		setNewDeck,
-		setDealer,
 		dealer: state.dealer,
-		dealHand,
-		dealCommunityCards,
 		communityCards: state.communityCards,
-		pot: state.pot,
 		currentTurn: state.currentTurn,
 		gameStage: state.gameStage,
+		setNewDeck,
+		setDealerByAddress,
+		dealHand,
+		dealCommunityCards,
 		setGameId,
 		addPlayer,
 		removePlayer,
 		setPlayerHand,
 		setCommunityCards,
-		setPot,
 		setCurrentTurn,
 		setGameStage,
 		getPlayerHand,
