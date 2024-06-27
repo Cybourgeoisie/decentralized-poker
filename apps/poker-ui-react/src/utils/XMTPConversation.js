@@ -63,10 +63,15 @@ export const useXMTPConversation = ({ gameId }) => {
 	}, [messages0, messages1, messages2, messages3, messages4, gameId]);
 
 	// Now, split out the formatted messages into chat messages and game state messages
+	const ackSenders = formattedMessages
+		.filter((msg) => msg.type === "connect")
+		.map((msg) => msg.senderAddress)
+		.filter((value, index, self) => self.indexOf(value) === index);
 	const chatMessages = formattedMessages.filter((msg) => msg.type === "chat").filter((message) => new Date() - message.timestamp < 30 * 60 * 1000);
 	const gameMessages = formattedMessages.filter((msg) => msg.type === "game");
 
 	return {
+		ackSenders,
 		chatMessages,
 		gameMessages,
 	};

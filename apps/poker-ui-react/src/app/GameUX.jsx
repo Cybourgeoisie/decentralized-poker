@@ -3,6 +3,7 @@ import { useXMTP } from "../providers/XMTPHelperProvider";
 import { usePoker } from "../providers/PokerProvider";
 //import { useGameContract } from "../providers/ContractProvider";
 import PokerTable from "../components/poker/PokerTable";
+import { useXMTPConversation } from "../utils/XMTPConversation";
 
 // test: KDVDzBJqIX
 
@@ -10,7 +11,24 @@ export default function GameUX({ gameId }) {
 	const { client: XmtpClient } = useXMTP();
 
 	const [copiedToClipboard, setCopiedToClipboard] = useState(false);
-	const { communityCards, getPlayerHand, players, dealHand, dealCommunityCards, deck, setNewDeck, dealer } = usePoker();
+	const { communityCards, getPlayerHand, players, dealHand, dealCommunityCards, deck, setNewDeck, dealer, updatePlayer } = usePoker();
+
+	const { ackSenders } = useXMTPConversation({ gameId });
+
+	// Set all players who've acked
+	useEffect(() => {
+		if (ackSenders && ackSenders.length > 0) {
+			ackSenders.forEach((ackSender) => {
+				try {
+					for (const player of players) {
+						if (ackSender === player.getAddress() && !player.getACK()) {
+							updatePlayer({ id: player.getId(), ack: true });
+						}
+					}
+				} catch (e) {}
+			});
+		}
+	}, [ackSenders]);
 
 	/**
 	 *  The next part here is to make sure that everyone has a consistent state of the game:

@@ -5,6 +5,7 @@ export class Player {
 		this.address = data.address;
 		this.hand = [];
 		this.isDealer = data.isDealer === true;
+		this.ack = data.ack;
 	}
 
 	getId() {
@@ -27,6 +28,19 @@ export class Player {
 		return this.isDealer;
 	}
 
+	getACK() {
+		return this.ack;
+	}
+
+	update(data) {
+		for (const key in data) {
+			if (this.hasOwnProperty(key)) {
+				this[key] = data[key];
+			}
+		}
+		return this;
+	}
+
 	setHand(hand) {
 		this.hand = hand;
 		return this;
@@ -34,6 +48,11 @@ export class Player {
 
 	setIsDealer(isDealer) {
 		this.isDealer = isDealer === true;
+		return this;
+	}
+
+	setACK(ack) {
+		this.ack = ack;
 		return this;
 	}
 }

@@ -84,7 +84,7 @@ export const XMTPHelperProvider = ({ children }) => {
 		async (gameId, address) => {
 			if (client && (await canMessage(address))) {
 				try {
-					const newConversation = await startConversation(address, formatMessage(gameId, "connect", ""));
+					const newConversation = await startConversation(address, formatMessage(gameId, "connect", "ACK"));
 					setConversations((conversations) => {
 						if (conversations && conversations.length && conversations.find((c) => c.peerAddress === newConversation.conversation.peerAddress)) {
 							return conversations;

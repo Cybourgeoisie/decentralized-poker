@@ -25,6 +25,7 @@ const initialState = {
 // Define action types
 const SET_GAME_ID = "SET_GAME_ID";
 const ADD_PLAYER = "ADD_PLAYER";
+const UPDATE_PLAYER = "UPDATE_PLAYER";
 const REMOVE_PLAYER = "REMOVE_PLAYER";
 const SET_PLAYER_HAND = "SET_PLAYER_HAND";
 const SET_COMMUNITY_CARDS = "SET_COMMUNITY_CARDS";
@@ -44,6 +45,11 @@ function pokerReducer(state, action) {
 				return state;
 			}
 			return { ...state, players: [...state.players, new Player(action.payload)] };
+		case UPDATE_PLAYER:
+			return {
+				...state,
+				players: state.players.map((player) => (player.getId() === action.payload.id ? player.update(action.payload) : player)),
+			};
 		case REMOVE_PLAYER:
 			return { ...state, players: state.players.filter((player) => player.getId() !== action.payload) };
 		case SET_PLAYER_HAND:
@@ -87,6 +93,10 @@ export function PokerProvider({ children }) {
 
 	const addPlayer = useCallback((player) => {
 		dispatch({ type: ADD_PLAYER, payload: player });
+	}, []);
+
+	const updatePlayer = useCallback((player) => {
+		dispatch({ type: UPDATE_PLAYER, payload: player });
 	}, []);
 
 	const removePlayer = useCallback((playerId) => {
@@ -160,6 +170,7 @@ export function PokerProvider({ children }) {
 		dealCommunityCards,
 		setGameId,
 		addPlayer,
+		updatePlayer,
 		removePlayer,
 		setPlayerHand,
 		setCommunityCards,

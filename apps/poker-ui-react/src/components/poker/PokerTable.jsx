@@ -1,16 +1,17 @@
 import React from "react";
 import PokerCard from "./PokerCard";
 import evaluateHand from "../../utils/PokerSolver";
+import { Player } from "../../classes/Player";
 
-export default function PokerTable({ players, communityCards, yourHand, dealer }) {
+export default function PokerTable({ players, communityCards, yourHand, dealer, activePlayer }) {
 	if (!players) {
 		players = [
-			{ id: 1, name: "Demo Player 1" },
-			{ id: 2, name: "Demo Player 2" },
-			{ id: 3, name: "Demo Player 3" },
-			{ id: 4, name: "Demo Player 4" },
-			{ id: 5, name: "Demo Player 5" },
-			{ id: 6, name: "You" },
+			new Player({ id: 1, name: "Demo Player 1", ack: true }),
+			new Player({ id: 2, name: "Demo Player 2", ack: true }),
+			new Player({ id: 3, name: "Demo Player 3", ack: true }),
+			new Player({ id: 4, name: "Demo Player 4", ack: true }),
+			new Player({ id: 5, name: "Demo Player 5", ack: true }),
+			new Player({ id: 6, name: "You", ack: true }),
 		];
 	}
 
@@ -48,8 +49,11 @@ export default function PokerTable({ players, communityCards, yourHand, dealer }
 							style={{ top: `calc(${top}%`, left: `${left}%`, transform: "translate(-50%, -50%)" }}
 						>
 							<div className="flex flex-row space-x-1 p-2">
-								<div className="bg-gray-800 text-white p-2 rounded">
+								<div className="bg-gray-800 text-white p-2 rounded flex items-center">
 									<div>{player.name}</div>
+									{player.id !== activePlayer && (
+										<div className={`w-3 h-3 rounded-full ml-2 ${player.getACK() ? "bg-green-500" : "bg-red-500"}`}></div>
+									)}
 								</div>
 								{player.address === dealer && dealer && (
 									<div className="bg-gray-800 text-white p-2 rounded">
@@ -71,8 +75,11 @@ export default function PokerTable({ players, communityCards, yourHand, dealer }
 					{yourHand && yourHand.map((card, index) => <PokerCard key={index} className="w-16 h-24 text-2xl" value={card} />)}
 				</div>
 				<div className="flex flex-row space-x-1">
-					<div className="bg-gray-800 text-white p-2 rounded">
+					<div className="bg-gray-800 text-white p-2 rounded flex items-center">
 						<div>{handDescription}</div>
+						{players && players.length && players[players.length - 1].id !== activePlayer && (
+							<div className={`w-3 h-3 rounded-full ml-2 ${players[players.length - 1].ack ? "bg-green-500" : "bg-red-500"}`}></div>
+						)}
 					</div>
 					{players && players.length && players[players.length - 1].address === dealer && dealer && (
 						<div className="bg-gray-800 text-white p-2 rounded">
