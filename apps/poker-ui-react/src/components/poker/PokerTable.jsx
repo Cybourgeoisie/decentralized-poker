@@ -6,12 +6,12 @@ import { Player } from "../../classes/Player";
 export default function PokerTable({ players, communityCards, yourHand, dealer, activePlayer }) {
 	if (!players) {
 		players = [
-			new Player({ id: 1, name: "Demo Player 1", ack: true }),
-			new Player({ id: 2, name: "Demo Player 2", ack: true }),
-			new Player({ id: 3, name: "Demo Player 3", ack: true }),
-			new Player({ id: 4, name: "Demo Player 4", ack: true }),
-			new Player({ id: 5, name: "Demo Player 5", ack: true }),
-			new Player({ id: 6, name: "You", ack: true }),
+			new Player({ id: 0, name: "Demo Player 1", ack: true }),
+			new Player({ id: 1, name: "Demo Player 2", ack: true }),
+			new Player({ id: 2, name: "Demo Player 3", ack: true }),
+			new Player({ id: 3, name: "Demo Player 4", ack: true }),
+			new Player({ id: 4, name: "Demo Player 5", ack: true }),
+			new Player({ id: 5, name: "You", ack: true }),
 		];
 	}
 
@@ -21,12 +21,16 @@ export default function PokerTable({ players, communityCards, yourHand, dealer, 
 	const hand = evaluateHand(yourHand, communityCards);
 	const handDescription = hand ? hand.descr : "No hand";
 
+	// Check if all players have acknowledged
+	const allPlayersAcked = players.every((player) => player.ack);
+
 	if (numPlayers < 2) {
 		return <div className="text-white">Waiting for players...</div>;
 	}
 
 	return (
 		<div className="relative w-full h-screen bg-green-800 p-4">
+			{/* Poker table content */}
 			<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-green-700 rounded-full border-4 border-yellow-600">
 				{/* Community cards */}
 				<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex space-x-2">
@@ -52,7 +56,7 @@ export default function PokerTable({ players, communityCards, yourHand, dealer, 
 								<div className="bg-gray-800 text-white p-2 rounded flex items-center">
 									<div>{player.name}</div>
 									{player.id !== activePlayer && (
-										<div className={`w-3 h-3 rounded-full ml-2 ${player.getACK() ? "bg-green-500" : "bg-red-500"}`}></div>
+										<div className={`w-3 h-3 rounded-full ml-2 ${player.ack ? "bg-green-500" : "bg-red-500"}`}></div>
 									)}
 								</div>
 								{player.address === dealer && dealer && (
@@ -88,6 +92,16 @@ export default function PokerTable({ players, communityCards, yourHand, dealer, 
 					)}
 				</div>
 			</div>
+
+			{/* Waiting modal */}
+			{!allPlayersAcked && (
+				<div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+					<div className="bg-white bg-opacity-90 p-6 rounded-lg shadow-lg">
+						<h2 className="text-2xl font-bold mb-4">Waiting for all players to join...</h2>
+						<p>Please wait while other players show up.</p>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

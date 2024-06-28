@@ -57,6 +57,13 @@ export const useXMTPConversation = ({ gameId }) => {
 						return m.content;
 					}
 				})(message),
+				messageJson: ((m) => {
+					try {
+						return JSON.parse(JSON.parse(m.content).message);
+					} catch (e) {
+						return {};
+					}
+				})(message),
 			}))
 			.filter((message) => message.gameId === gameId)
 			.sort((a, b) => a.timestamp - b.timestamp);

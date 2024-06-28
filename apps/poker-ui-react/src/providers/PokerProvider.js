@@ -20,8 +20,6 @@ const initialState = {
 	gameStage: "waiting", // waiting, preflop, flop, turn, river, showdown
 };
 
-// test: RQzvOgny9k
-
 // Define action types
 const SET_GAME_ID = "SET_GAME_ID";
 const ADD_PLAYER = "ADD_PLAYER";
@@ -30,9 +28,11 @@ const REMOVE_PLAYER = "REMOVE_PLAYER";
 const SET_PLAYER_HAND = "SET_PLAYER_HAND";
 const SET_COMMUNITY_CARDS = "SET_COMMUNITY_CARDS";
 const SET_CURRENT_TURN = "SET_CURRENT_TURN";
+const SET_HISTORY = "SET_HISTORY";
 const SET_GAME_STAGE = "SET_GAME_STAGE";
 const SET_DECK = "SET_DECK";
 const SET_DEALER = "SET_DEALER";
+const SET_KEYS = "SET_KEYS";
 
 // Reducer function
 function pokerReducer(state, action) {
@@ -61,6 +61,8 @@ function pokerReducer(state, action) {
 			return { ...state, communityCards: action.payload };
 		case SET_CURRENT_TURN:
 			return { ...state, currentTurn: action.payload };
+		case SET_HISTORY:
+			return { ...state, history: action.payload };
 		case SET_GAME_STAGE:
 			return { ...state, gameStage: action.payload };
 		case SET_DECK:
@@ -74,6 +76,8 @@ function pokerReducer(state, action) {
 				players: state.players.map((player) => (player.getAddress() === action.payload.id ? player.setIdDealer(true) : player.setIsDealer(false))),
 			};
 			*/
+		case SET_KEYS:
+			return { ...state, keys: action.payload };
 		default:
 			return state;
 	}
@@ -115,18 +119,34 @@ export function PokerProvider({ children }) {
 		dispatch({ type: SET_CURRENT_TURN, payload: playerId });
 	}, []);
 
+	const setHistory = useCallback((history) => {
+		dispatch({ type: SET_HISTORY, payload: history });
+	}, []);
+
+	const addToHistory = useCallback(
+		(event) => {
+			dispatch({ type: SET_HISTORY, payload: [...state.history, event] });
+		},
+		[state.history],
+	);
+
 	const setGameStage = useCallback((stage) => {
 		dispatch({ type: SET_GAME_STAGE, payload: stage });
 	}, []);
 
+	const setKeys = useCallback((keys) => {
+		dispatch({ type: SET_KEYS, payload: keys });
+	}, []);
+
+	/*
 	const setNewDeck = useCallback(() => {
 		const deck = getNewDeck();
 		deck.sort(() => Math.random() - 0.5);
 		dispatch({ type: SET_DECK, payload: deck });
 	}, []);
+	*/
 
 	const setDealerByAddress = useCallback((dealer) => {
-		console.log("Setting dealer:", dealer);
 		dispatch({ type: SET_DEALER, payload: dealer });
 	}, []);
 
@@ -164,7 +184,12 @@ export function PokerProvider({ children }) {
 		communityCards: state.communityCards,
 		currentTurn: state.currentTurn,
 		gameStage: state.gameStage,
-		setNewDeck,
+		keys: state.keys,
+		history: state.history,
+		setHistory,
+		addToHistory,
+		setKeys,
+		//setNewDeck,
 		setDealerByAddress,
 		dealHand,
 		dealCommunityCards,

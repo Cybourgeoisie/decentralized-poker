@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Mental Poker Implementation (secp256k1)</title>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+	</head>
+	<body>
+		<h1>Mental Poker Implementation (secp256k1)</h1>
+		<p>Open the browser console to see detailed logs of the process.</p>
+
+		<script>
+			// Paste the entire updated JavaScript code here
+			// Mental Poker Implementation using secp256k1
+
+			class MentalPoker {
+				constructor(numPlayers) {
+					this.numPlayers = numPlayers;
+					this.deck = this.createDeck();
+					this.playerKeys = [];
+					this.ec = new elliptic.ec("secp256k1");
+					console.log(`Initialized MentalPoker with ${numPlayers} players`);
+					console.log("Initial deck:", this.deck);
+				}
+
+				createDeck() {
+					const suits = ["♠", "♥", "♦", "♣"];
+					const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+					const deck = suits.flatMap((suit) => values.map((value) => `${value}${suit}`));
+					console.log("Created deck:", deck);
+					return deck;
+				}
+
+				generatePlayerKeys() {
+					console.log("Generating player keys...");
+					for (let i = 0; i < this.numPlayers; i++) {
+						const keyPair = this.ec.genKeyPair();
+						this.playerKeys.push(keyPair);
+						console.log(`Generated key pair for player ${i + 1}`);
+					}
+					console.log("All player keys generated");
+				}
+
+				encryptCard(card, publicKey) {
+					const msg = this.ec.keyFromPrivate(card, "hex").getPublic();
+					const shared = publicKey.mul(msg.getX());
+					return shared.getX().toString(16);
+				}
+
+				decryptCard(encryptedCard, privateKey) {
+					const shared = this.ec.keyFromPrivate(encryptedCard, "hex").mul(privateKey);
+					return shared.getX().toString(16);
+				}
+
+				async encryptDeck() {
+					console.log("Starting deck encryption process...");
+					let encryptedDeck = this.deck.map((card) => this.ec.genKeyPair().getPrivate().toString(16));
+					for (let i = 0; i < this.numPlayers; i++) {
+						console.log(`Encrypting deck with player ${i + 1}'s public key`);
+						encryptedDeck = encryptedDeck.map((card, index) => {
+							const encrypted = this.encryptCard(card, this.playerKeys[i].getPublic());
+							console.log(`Encrypted card ${index + 1}: ${card.slice(0, 10)}... -> ${encrypted.slice(0, 10)}...`);
+							return encrypted;
+						});
+					}
+					console.log("Deck encryption complete");
+					return encryptedDeck;
+				}
+
+				async playGame() {
+					console.log("Starting the game...");
+					this.generatePlayerKeys();
+
+					console.log("Encrypting the deck...");
+					const encryptedDeck = await this.encryptDeck();
+
+					console.log("Shuffling the encrypted deck...");
+					for (let i = encryptedDeck.length - 1; i > 0; i--) {
+						const j = Math.floor(Math.random() * (i + 1));
+						[encryptedDeck[i], encryptedDeck[j]] = [encryptedDeck[j], encryptedDeck[i]];
+					}
+					console.log("Encrypted deck shuffled");
+
+					console.log("Dealing cards to players...");
+					const hands = Array(this.numPlayers)
+						.fill()
+						.map(() => []);
+					for (let i = 0; i < 2; i++) {
+						// Each player gets 2 cards in Texas Hold'em
+						for (let j = 0; j < this.numPlayers; j++) {
+							hands[j].push(encryptedDeck.pop());
+							console.log(`Dealt encrypted card to player ${j + 1}`);
+						}
+					}
+					console.log("All cards dealt");
+
+					console.log("Decrypting player hands...", hands);
+					const decryptedHands = hands.map((hand, playerIndex) => {
+						console.log(`Decrypting hand for player ${playerIndex + 1}`);
+						return hand.map((card, cardIndex) => {
+							console.log(`Decrypting card ${cardIndex + 1} for player ${playerIndex + 1}`);
+							for (let i = this.numPlayers - 1; i >= 0; i--) {
+								card = this.decryptCard(card, this.playerKeys[i].getPrivate());
+							}
+							return card;
+						});
+					});
+					console.log("All hands decrypted");
+
+					return decryptedHands;
+				}
+			}
+
+			// Usage example
+			async function runGame() {
+				console.log("Initializing Mental Poker game...");
+				const game = new MentalPoker(3); // 3 players
+				console.log("Starting the game...");
+				const hands = await game.playGame();
+				console.log("Game completed. Final hands:");
+				hands.forEach((hand, index) => {
+					console.log(`Player ${index + 1}'s hand:`, hand);
+				});
+			}
+
+			console.log("Script loaded. Running the game...");
+			runGame().catch((error) => console.error("Game error:", error));
+		</script>
+	</body>
+</html>

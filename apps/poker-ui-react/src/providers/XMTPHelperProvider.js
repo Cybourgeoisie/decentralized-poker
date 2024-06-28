@@ -148,6 +148,22 @@ export const XMTPHelperProvider = ({ children }) => {
 		[conversations, sendMessage],
 	);
 
+	const sendDirectMessage = useCallback(
+		async (address, gameId, type, message) => {
+			if (conversations) {
+				const conversation = conversations.find((c) => c.peerAddress === address);
+				try {
+					if (conversation && conversation.peerAddress) {
+						await sendMessage(conversation, formatMessage(gameId, type, message));
+					}
+				} catch (error) {
+					console.error("Failed to send message:", error);
+				}
+			}
+		},
+		[conversations, sendMessage],
+	);
+
 	const value = {
 		client,
 		isInitialized,
@@ -157,6 +173,7 @@ export const XMTPHelperProvider = ({ children }) => {
 		conversations,
 		messageHistory,
 		sendMessage: broadcastMessageWrapper,
+		sendDirectMessage,
 	};
 
 	return <XMTPContext.Provider value={value}>{children}</XMTPContext.Provider>;
