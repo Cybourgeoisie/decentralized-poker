@@ -1,6 +1,6 @@
 # Decentralized Poker
 
-An experiment in making Mental Poker a fully decentralized experience using various on-chain & crypto-based technologies.
+An experiment in making a decentralized poker game using various on-chain & crypto-based technologies.
 
 ## Installation
 
