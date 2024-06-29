@@ -6,6 +6,7 @@ export class Player {
 		this.hand = [];
 		this.isDealer = data.isDealer === true;
 		this.ack = data.ack;
+		this.didMakeChoices = false;
 	}
 
 	getId() {
@@ -30,6 +31,23 @@ export class Player {
 
 	getACK() {
 		return this.ack;
+	}
+
+	hasMadeChoices() {
+		return this.didMakeChoices;
+	}
+
+	madeChoice() {
+		this.didMakeChoices = true;
+	}
+
+	setFinalHand(hand) {
+		this.hand = hand;
+		this.madeChoice();
+	}
+
+	showFinalHand() {
+		return this.hand;
 	}
 
 	update(data) {

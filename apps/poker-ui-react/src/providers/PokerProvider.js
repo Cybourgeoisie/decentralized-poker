@@ -1,13 +1,6 @@
 import React, { createContext, useContext, useReducer, useCallback } from "react";
 import { Player } from "../classes/Player";
 
-const Suits = ["d", "c", "h", "s"];
-const Ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"];
-
-const getNewDeck = () => {
-	return Suits.flatMap((suit) => Ranks.map((rank) => `${rank}${suit}`));
-};
-
 // Define the initial state
 const initialState = {
 	gameId: null,

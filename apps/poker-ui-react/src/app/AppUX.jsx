@@ -6,15 +6,13 @@ import ChatSidebar from "../components/chat-sidebar/ChatSidebar";
 import { useXMTP } from "../providers/XMTPHelperProvider";
 import { usePoker } from "../providers/PokerProvider";
 import { useGameContract } from "../providers/ContractProvider";
-import { MentalPoker } from "../classes/MentalPoker";
 
 export default function AppUX() {
 	const { startNewConversation } = useXMTP();
-	const { addPlayer, players, setDealerByAddress, setKeys } = usePoker();
+	const { addPlayer, players, setDealerByAddress } = usePoker();
 	const { address, gameId, setGameId, gameData, bytes16ToString, registerGame, generateRandomString, isConfirmed } = useGameContract();
 	const [newGameId, setNewGameId] = useState(null);
 	const [invalidGameId, setInvalidGameId] = useState(false);
-	const [generatingKeys, setGeneratingKeys] = useState(false);
 
 	const registerNewGame = async (players = []) => {
 		const newGameId = await generateRandomString();
@@ -42,7 +40,7 @@ export default function AppUX() {
 		if (gameData && gameData.length > 0 && (!players || players.length === 0)) {
 			const [gameInfo, gamePlayers] = gameData;
 
-			if (!gameInfo || !gameInfo.result || generatingKeys) {
+			if (!gameInfo || !gameInfo.result) {
 				return;
 			}
 
@@ -56,16 +54,6 @@ export default function AppUX() {
 
 				// Switch to async here to generate the keys
 				(async () => {
-					// We have a game -- so check to see if we have a key to use -- if we don't create a pair, if we do, load it
-					if (generatingKeys) return; // Lock
-					setGeneratingKeys(true);
-					let keys = await MentalPoker.loadKeysFromLocalStorage(address, stringGameId);
-					if (!keys) {
-						keys = await MentalPoker.generatePlayerKeys();
-						await MentalPoker.saveKeysToLocalStorage(keys, address, stringGameId);
-					}
-					setKeys(keys);
-
 					if (gamePlayers && gamePlayers.result) {
 						gamePlayers.result.forEach((player, index) => {
 							if (player.toLowerCase() !== address.toLowerCase()) {
@@ -78,26 +66,12 @@ export default function AppUX() {
 
 					// The dealer is the creator of the game
 					setDealerByAddress(creator);
-					setGeneratingKeys(false);
 				})();
 			} else if (hexGameId === "0x00000000000000000000000000000000") {
 				setInvalidGameId(true);
 			}
 		}
-	}, [
-		gameId,
-		gameData,
-		bytes16ToString,
-		startNewConversation,
-		addPlayer,
-		address,
-		setInvalidGameId,
-		setDealerByAddress,
-		players,
-		generatingKeys,
-		setGeneratingKeys,
-		setKeys,
-	]);
+	}, [gameId, gameData, bytes16ToString, startNewConversation, addPlayer, address, setInvalidGameId, setDealerByAddress, players]);
 
 	return (
 		<div className="App">

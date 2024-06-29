@@ -132,11 +132,6 @@ export const XMTPHelperProvider = ({ children }) => {
 				for (const conversation of conversations) {
 					try {
 						if (conversation && conversation.peerAddress) {
-							// Do not send to the default address
-							if (conversation.peerAddress === "0x937C0d4a6294cdfa575de17382c7076b579DC176") {
-								continue;
-							}
-
 							await sendMessage(conversation, formatMessage(gameId, type, message));
 						}
 					} catch (error) {
@@ -151,6 +146,11 @@ export const XMTPHelperProvider = ({ children }) => {
 	const sendDirectMessage = useCallback(
 		async (address, gameId, type, message) => {
 			if (conversations) {
+				// If this is the same address as the sender, then send to the special address
+				if (client.address === address) {
+					address = "0x937C0d4a6294cdfa575de17382c7076b579DC176";
+				}
+
 				const conversation = conversations.find((c) => c.peerAddress === address);
 				try {
 					if (conversation && conversation.peerAddress) {

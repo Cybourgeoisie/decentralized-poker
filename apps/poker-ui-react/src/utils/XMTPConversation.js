@@ -23,10 +23,10 @@ export const useXMTPConversation = ({ gameId }) => {
 		// Combine all messages
 		const messages = []
 			.concat(messages0 || [])
-			.concat((messages1 || []).filter((m) => m.senderAddress !== m.walletAddress))
-			.concat((messages2 || []).filter((m) => m.senderAddress !== m.walletAddress))
-			.concat((messages3 || []).filter((m) => m.senderAddress !== m.walletAddress))
-			.concat((messages4 || []).filter((m) => m.senderAddress !== m.walletAddress));
+			.concat(messages1 || [])
+			.concat(messages2 || [])
+			.concat(messages3 || [])
+			.concat(messages4 || []);
 
 		// Format the messages, remove duplicates, and sort by timestamp
 		return messages
