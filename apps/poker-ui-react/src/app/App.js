@@ -13,12 +13,7 @@ import AppUX from "./AppUX";
 
 const wagmiConfig = createConfig({
 	chains: [baseSepolia, base],
-	connectors: [
-		coinbaseWallet({
-			appChainIds: [baseSepolia.id, base.id],
-			appName: "onchainkit-decentralized-poker",
-		}),
-	],
+	connectors: [],
 	ssr: true,
 	transports: {
 		[baseSepolia.id]: http(),

@@ -29,7 +29,7 @@ const StyledButton = styled.button`
 	}
 `;
 
-export default function AccountConnect({ gameId, setGameId }) {
+export default function AccountConnect({ setGameId }) {
 	const { address, status, isConnected } = useAccount();
 	const { data: walletClient } = useWalletClient();
 

@@ -1,5 +1,5 @@
-import React, { createContext, useState, useContext, useCallback, useEffect, useMemo } from "react";
-import { Client, useClient, useCanMessage, useStartConversation, useSendMessage, useMessages, useStreamMessages } from "@xmtp/react-sdk";
+import React, { createContext, useState, useContext, useCallback, useEffect } from "react";
+import { Client, useClient, useCanMessage, useStartConversation, useSendMessage } from "@xmtp/react-sdk";
 
 const XMTPContext = createContext();
 
@@ -53,7 +53,6 @@ export const XMTPHelperProvider = ({ children }) => {
 				try {
 					await initialize({ keys, options, signer: walletClient });
 					setIsInitialized(true);
-					console.log("XMTP client initialized");
 				} catch (error) {
 					console.error("Failed to initialize XMTP client:", error);
 				}
