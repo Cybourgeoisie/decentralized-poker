@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export const ChatInput = ({ onSendMessage, replyingToMessage, isPWA = false }) => {
+export const ChatInput = ({ onSendMessage, isPWA = false }) => {
 	const [newMessage, setNewMessage] = useState("");
 
 	const handleInputChange = (event) => {

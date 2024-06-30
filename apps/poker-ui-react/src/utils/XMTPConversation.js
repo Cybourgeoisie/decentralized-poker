@@ -36,6 +36,13 @@ export const useXMTPConversation = ({ gameId }) => {
 			.map((message) => ({
 				...message,
 				timestamp: new Date(message.sentAt),
+				messageUuid: ((m) => {
+					try {
+						return JSON.parse(m.content).messageUuid;
+					} catch (e) {
+						return null;
+					}
+				})(message),
 				gameId: ((m) => {
 					try {
 						return JSON.parse(m.content).gameId;
@@ -74,7 +81,10 @@ export const useXMTPConversation = ({ gameId }) => {
 		.filter((msg) => msg.type === "connect")
 		.map((msg) => msg.senderAddress)
 		.filter((value, index, self) => self.indexOf(value) === index);
-	const chatMessages = formattedMessages.filter((msg) => msg.type === "chat").filter((message) => new Date() - message.timestamp < 30 * 60 * 1000);
+	const chatMessages = formattedMessages
+		.filter((msg) => msg.type === "chat")
+		.filter((message) => new Date() - message.timestamp < 30 * 60 * 1000)
+		.filter((message, index, self) => self.findIndex((m) => m.messageUuid === message.messageUuid) === index);
 	const gameMessages = formattedMessages.filter((msg) => msg.type === "game");
 
 	return {

@@ -76,15 +76,16 @@ export const XMTPHelperProvider = ({ children }) => {
 		}
 	}, [client, disconnectClient]);
 
-	const formatMessage = function (gameId, messageType, message) {
-		return JSON.stringify({ gameId, type: messageType, message });
+	const formatMessage = function (gameId, messageUuid, messageType, message) {
+		return JSON.stringify({ gameId, messageUuid, type: messageType, message });
 	};
 
 	const startNewConversation = useCallback(
 		async (gameId, address) => {
 			if (client && (await canMessage(address))) {
 				try {
-					const newConversation = await startConversation(address, formatMessage(gameId, "connect", "ACK"));
+					const messageUuid = Math.random().toString(36);
+					const newConversation = await startConversation(address, formatMessage(gameId, messageUuid, "connect", "ACK"));
 					setConversations((conversations) => {
 						if (conversations && conversations.length && conversations.find((c) => c.peerAddress === newConversation.conversation.peerAddress)) {
 							return conversations;
@@ -129,10 +130,12 @@ export const XMTPHelperProvider = ({ children }) => {
 	const broadcastMessageWrapper = useCallback(
 		async (gameId, type, message) => {
 			if (conversations) {
+				// One message UUID for all conversations
+				const messageUuid = Math.random().toString(36);
 				for (const conversation of conversations) {
 					try {
 						if (conversation && conversation.peerAddress) {
-							await sendMessage(conversation, formatMessage(gameId, type, message));
+							await sendMessage(conversation, formatMessage(gameId, messageUuid, type, message));
 						}
 					} catch (error) {
 						console.error("Failed to send message:", error);
@@ -154,7 +157,8 @@ export const XMTPHelperProvider = ({ children }) => {
 				const conversation = conversations.find((c) => c.peerAddress === address);
 				try {
 					if (conversation && conversation.peerAddress) {
-						await sendMessage(conversation, formatMessage(gameId, type, message));
+						const messageUuid = Math.random().toString(36);
+						await sendMessage(conversation, formatMessage(gameId, messageUuid, type, message));
 					}
 				} catch (error) {
 					console.error("Failed to send message:", error);
