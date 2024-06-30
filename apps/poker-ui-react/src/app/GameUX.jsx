@@ -7,11 +7,11 @@ import PokerTable from "../components/poker/PokerTable";
 import { useXMTPConversation } from "../utils/XMTPConversation";
 import { PokerSolver } from "../utils/PokerSolver";
 
-export default function GameUX({ gameId }) {
+export default function GameUX({ gameId, resetGame = () => {} }) {
 	const { client: XmtpClient, sendDirectMessage, sendMessage } = useXMTP();
 
 	const [copiedToClipboard, setCopiedToClipboard] = useState(false);
-	const { players, dealer, updatePlayer, keys } = usePoker();
+	const { players, dealer, updatePlayer, keys, resetAll } = usePoker();
 	const { address } = useAccount();
 
 	const { ackSenders, gameMessages } = useXMTPConversation({ gameId });
@@ -190,9 +190,6 @@ export default function GameUX({ gameId }) {
 					decisionMadeForPlayer.push(player.getAddress());
 				}
 
-				// Now send the latest deck to the dealer
-				sendDirectMessage(dealer, gameId, "game", JSON.stringify({ state: "deck", deck: game.getDeck() }));
-
 				setLock("decision-delivered");
 			}
 
@@ -215,10 +212,8 @@ export default function GameUX({ gameId }) {
 			console.log("Sending decision to dealer:", cards);
 
 			// Notify all players that this player has made a decision
-			for (const player of players) {
-				console.log("Sending decision made message to:", player.getAddress());
-				sendDirectMessage(player.getAddress(), gameId, "game", JSON.stringify({ state: "decision-made", address }));
-			}
+			sendMessage(gameId, "game", JSON.stringify({ state: "decision-made", address }));
+			console.log("Sending decision made message to everyone.");
 		},
 		[dealer, gameId, playerHand, sendDirectMessage],
 	);
@@ -240,6 +235,9 @@ export default function GameUX({ gameId }) {
 						dealer={dealer}
 						lock={lock}
 						setChoices={setChoices}
+						onReturnToMenu={() => {
+							window.location.reload();
+						}}
 					/>
 					<div className="absolute bottom-4 left-4 bg-white bg-opacity-90 p-1 rounded-md shadow-sm flex flex-row space-x-2 align-middle justify-center items-center">
 						<p className="text-md font-semibold">Game ID: {gameId}</p>

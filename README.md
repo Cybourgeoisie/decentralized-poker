@@ -35,6 +35,15 @@ npx ethfs-cli create -p [pkey] -c 11155111
 npx ethfs-cli upload -f apps/poker-ui-react/build -a [deployment address from previous line] -c 11155111 -p [pkey] -t 1
 ```
 
+```
+# cheaper on-chain storage
+npx ethfs-cli create -p [pkey] -c 11155111
+npx ethfs-cli upload -f apps/poker-ui-react/build -a [deployment address from previous line] -c 11155111 -p [pkey] -t 2
+
+0xE30967d31A432AbdBC5F6816073f9eF02dfD01d5
+https://0xE30967d31A432AbdBC5F6816073f9eF02dfD01d5.3333.w3link.io/index.html
+```
+
 Base Sepolia Deployment:
 
 ```
@@ -50,7 +59,7 @@ npx ethfs-cli create -p [pkey] -c 84532
 
 ### Apps
 
-- Poker UI React - React implementation of Poker UI
+-   Poker UI React - React implementation of Poker UI
 
 ### Packages
 
@@ -58,8 +67,8 @@ None yet
 
 ### Chain IDs
 
-- Base: 8453
-- Base Sepolia: 84532
+-   Base: 8453
+-   Base Sepolia: 84532
 
 ### Conventions
 

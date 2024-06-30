@@ -10,14 +10,12 @@ export const useXMTPConversation = ({ gameId }) => {
 	const { messages: messages1 } = useMessages(conversations[1] || { topic: "" });
 	const { messages: messages2 } = useMessages(conversations[2] || { topic: "" });
 	const { messages: messages3 } = useMessages(conversations[3] || { topic: "" });
-	const { messages: messages4 } = useMessages(conversations[4] || { topic: "" });
 
 	// Stream messages for each conversation
 	useStreamMessages(conversations[0]);
 	useStreamMessages(conversations[1]);
 	useStreamMessages(conversations[2]);
 	useStreamMessages(conversations[3]);
-	useStreamMessages(conversations[4]);
 
 	const formattedMessages = useMemo(() => {
 		// Combine all messages
@@ -25,8 +23,7 @@ export const useXMTPConversation = ({ gameId }) => {
 			.concat(messages0 || [])
 			.concat(messages1 || [])
 			.concat(messages2 || [])
-			.concat(messages3 || [])
-			.concat(messages4 || []);
+			.concat(messages3 || []);
 
 		// Format the messages, remove duplicates, and sort by timestamp
 		return messages
@@ -74,7 +71,7 @@ export const useXMTPConversation = ({ gameId }) => {
 			}))
 			.filter((message) => message.gameId === gameId)
 			.sort((a, b) => a.timestamp - b.timestamp);
-	}, [messages0, messages1, messages2, messages3, messages4, gameId]);
+	}, [messages0, messages1, messages2, messages3, gameId]);
 
 	// Now, split out the formatted messages into chat messages and game state messages
 	const ackSenders = formattedMessages

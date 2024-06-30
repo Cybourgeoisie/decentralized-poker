@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import AccountConnect from "../components/account-connect/AccountConnect";
 import GameSetupUX from "./GameSetupUX";
 import GameUX from "./GameUX";
@@ -73,6 +73,14 @@ export default function AppUX() {
 		}
 	}, [gameId, gameData, bytes16ToString, startNewConversation, addPlayer, address, setInvalidGameId, setDealerByAddress, players]);
 
+	const resetGame = useCallback(() => {
+		// Still some bugs with resetting everything...
+		setGameId(null);
+		setNewGameId(null);
+		setDealerByAddress(null);
+		setInvalidGameId(false);
+	}, [setGameId, setNewGameId, setDealerByAddress, setInvalidGameId]);
+
 	return (
 		<div className="App">
 			{/* Account Connect */}
@@ -81,7 +89,7 @@ export default function AppUX() {
 			</header>
 
 			{/* Game UX */}
-			<GameUX gameId={gameId} players={players} />
+			<GameUX gameId={gameId} players={players} resetGame={resetGame} />
 
 			{/* Game Setup UX */}
 			<GameSetupUX

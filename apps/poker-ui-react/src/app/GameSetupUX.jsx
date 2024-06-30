@@ -8,6 +8,16 @@ export default function GameSetupUX({ gameId, setGameId, registerNewGame, joinGa
 	const [showRegisterGameForm, setShowRegisterGameForm] = useState(false);
 	const [joinGameId, setJoinGameId] = useState("");
 	const { isConnected, hash, error, isConfirming, isLoadingGameData } = useGameContract();
+	const [displayError, setDisplayError] = useState(null);
+	const [showDisplayError, setShowDisplayError] = useState(false);
+
+	React.useEffect(() => {
+		const _error = error?.message || error;
+		if (_error !== displayError) {
+			setDisplayError(_error);
+			setShowDisplayError(true);
+		}
+	}, [error]);
 
 	if (isLoadingGameData) {
 		return <div>Loading game data...</div>;
@@ -65,16 +75,8 @@ export default function GameSetupUX({ gameId, setGameId, registerNewGame, joinGa
 							<div className="space-y-2">
 								<input
 									type="text"
-									id="player1"
-									placeholder="Player 1 (0x...)"
-									className="w-full py-2 px-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-								/>
-							</div>
-							<div className="space-y-2">
-								<input
-									type="text"
 									id="player2"
-									placeholder="(Optional) Player 2 (0x...)"
+									placeholder="Player 2 (0x...)"
 									className="w-full py-2 px-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
 								/>
 							</div>
@@ -94,31 +96,21 @@ export default function GameSetupUX({ gameId, setGameId, registerNewGame, joinGa
 									className="w-full py-2 px-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
 								/>
 							</div>
-							<div className="space-y-2">
-								<input
-									type="text"
-									id="player5"
-									placeholder="(Optional) Player 5 (0x...)"
-									className="w-full py-2 px-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-								/>
-							</div>
 
 							<button
 								onClick={() => {
 									// Pull the addresses from the input fields
-									const player1 = document.getElementById("player1").value;
 									const player2 = document.getElementById("player2").value;
 									const player3 = document.getElementById("player3").value;
 									const player4 = document.getElementById("player4").value;
-									const player5 = document.getElementById("player5").value;
 
 									// Required to have at least one player
-									if (!player1) {
+									if (!player2) {
 										alert("Please enter at least one player address.");
 										return;
 									}
 
-									registerNewGame([player1, player2, player3, player4, player5]);
+									registerNewGame([player2, player3, player4]);
 								}}
 								className="w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300"
 							>
@@ -169,11 +161,17 @@ export default function GameSetupUX({ gameId, setGameId, registerNewGame, joinGa
 				</div>
 			)}
 
-			{XmtpClient && error && (
+			{XmtpClient && showDisplayError && (
 				<div className="absolute inset-0 z-10 flex items-center justify-center bg-black bg-opacity-70">
 					<div className="text-center p-8 bg-white bg-opacity-90 rounded-lg shadow-xl max-w-96">
 						<h1 className="text-3xl font-bold text-gray-800 mb-4">Error</h1>
-						<p className="text-md text-gray-600">{error.message}</p>
+						<p className="text-md text-gray-600 mb-6">{displayError}</p>
+						<button
+							onClick={() => setShowDisplayError(false)}
+							className="py-2 px-4 bg-red-500 text-white rounded hover:bg-red-600 transition duration-300"
+						>
+							Close
+						</button>
 					</div>
 				</div>
 			)}

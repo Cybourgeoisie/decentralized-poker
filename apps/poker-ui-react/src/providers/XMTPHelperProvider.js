@@ -84,7 +84,7 @@ export const XMTPHelperProvider = ({ children }) => {
 		async (gameId, address) => {
 			if (client && (await canMessage(address))) {
 				try {
-					const messageUuid = Math.random().toString(36);
+					const messageUuid = generateUniqueId();
 					const newConversation = await startConversation(address, formatMessage(gameId, messageUuid, "connect", "ACK"));
 					setConversations((conversations) => {
 						if (conversations && conversations.length && conversations.find((c) => c.peerAddress === newConversation.conversation.peerAddress)) {
@@ -131,7 +131,7 @@ export const XMTPHelperProvider = ({ children }) => {
 		async (gameId, type, message) => {
 			if (conversations) {
 				// One message UUID for all conversations
-				const messageUuid = Math.random().toString(36);
+				const messageUuid = generateUniqueId();
 				for (const conversation of conversations) {
 					try {
 						if (conversation && conversation.peerAddress) {
@@ -157,7 +157,7 @@ export const XMTPHelperProvider = ({ children }) => {
 				const conversation = conversations.find((c) => c.peerAddress === address);
 				try {
 					if (conversation && conversation.peerAddress) {
-						const messageUuid = Math.random().toString(36);
+						const messageUuid = generateUniqueId();
 						await sendMessage(conversation, formatMessage(gameId, messageUuid, type, message));
 					}
 				} catch (error) {
@@ -167,6 +167,10 @@ export const XMTPHelperProvider = ({ children }) => {
 		},
 		[conversations, sendMessage],
 	);
+
+	const generateUniqueId = useCallback(() => {
+		return Math.random().toString(36).substring(7);
+	}, []);
 
 	const value = {
 		client,

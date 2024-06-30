@@ -4,21 +4,19 @@ import { PokerSolver } from "../../utils/PokerSolver";
 import { Player } from "../../classes/Player";
 import { CheckCircle, XCircle, Crown } from "lucide-react";
 
-export default function PokerTable({ players, address, yourHand, dealer, lock, setChoices = () => {} }) {
+export default function PokerTable({ players, address, yourHand, dealer, lock, setChoices = () => {}, onReturnToMenu = () => {} }) {
 	const [selectedCards, setSelectedCards] = useState([]);
 
 	if (!players) {
 		players = [
-			new Player({ id: 0, name: "Demo Player 1", ack: true }),
 			new Player({ id: 1, name: "Demo Player 2", ack: true }),
 			new Player({ id: 2, name: "Demo Player 3", ack: true }),
 			new Player({ id: 3, name: "Demo Player 4", ack: true }),
-			new Player({ id: 4, name: "Demo Player 5", ack: true }),
 			new Player({ id: 5, name: "You", ack: true }),
 		];
 	}
 
-	const numPlayers = Math.max(2, Math.min(6, players.length));
+	const numPlayers = Math.max(2, Math.min(4, players.length));
 
 	const game = new PokerSolver();
 	const hand = game.evaluateHand(yourHand);
@@ -173,10 +171,22 @@ export default function PokerTable({ players, address, yourHand, dealer, lock, s
 			{lock === "end-game" && winner && (
 				<div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
 					<div className="bg-white bg-opacity-90 p-6 rounded-lg shadow-lg text-center">
-						<h2 className="text-3xl font-bold mb-4">The Winner is</h2>
-						<p className="text-md flex items-center justify-center">
-							{winner} <Crown className="ml-2 text-yellow-400" size={24} />
-						</p>
+						{winner !== address ? (
+							<>
+								<h2 className="text-3xl font-bold mb-4">The Winner is</h2>
+								<p className="text-md flex items-center justify-center">
+									{winner} <Crown className="ml-2 text-yellow-400" size={24} />
+								</p>
+							</>
+						) : (
+							<h2 className="text-3xl font-bold flex flex-row items-center">
+								<Crown className="text-yellow-400 mr-2" size={24} />
+								You won!
+							</h2>
+						)}
+						<button onClick={onReturnToMenu} className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+							Reload & Play Again{/*Return to Menu*/}
+						</button>
 					</div>
 				</div>
 			)}
