@@ -3,7 +3,6 @@ import "./App.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { baseSepolia, base } from "wagmi/chains";
-import { coinbaseWallet } from "wagmi/connectors";
 import { ConnectKitProvider } from "connectkit";
 import { XMTPProvider } from "@xmtp/react-sdk";
 import { XMTPHelperProvider } from "../providers/XMTPHelperProvider";
